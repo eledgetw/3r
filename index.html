@@ -1618,9 +1618,19 @@
               <div class="node-desc">${node.details.subtitle}</div>
             </div>
           `;
+          let pressStartX = 0;
+          let pressStartY = 0;
           el.addEventListener("pointerdown", (e) => {
-            e.stopPropagation();
-            toggleInfoPanel(node);
+            pressStartX = e.clientX;
+            pressStartY = e.clientY;
+          });
+          el.addEventListener("pointerup", (e) => {
+            const diffX = Math.abs(e.clientX - pressStartX);
+            const diffY = Math.abs(e.clientY - pressStartY);
+            if (diffX < 10 && diffY < 10) {
+              e.stopPropagation();
+              toggleInfoPanel(node);
+            }
           });
         } else {
           const mediaWrap = document.createElement("div");
@@ -1682,9 +1692,19 @@
           el.appendChild(labelBox);
 
           [videoElement, imgElement, labelBox].forEach((target) => {
+            let startX = 0;
+            let startY = 0;
             target.addEventListener("pointerdown", (e) => {
-              e.stopPropagation();
-              toggleInfoPanel(node);
+              startX = e.clientX;
+              startY = e.clientY;
+            });
+            target.addEventListener("pointerup", (e) => {
+              const diffX = Math.abs(e.clientX - startX);
+              const diffY = Math.abs(e.clientY - startY);
+              if (diffX < 10 && diffY < 10) {
+                e.stopPropagation();
+                toggleInfoPanel(node);
+              }
             });
           });
         }
