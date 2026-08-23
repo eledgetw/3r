@@ -2,7 +2,10 @@
 <html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
     <title>佛教宇宙觀 - 互動畫布</title>
     <style>
       /* 基礎重置與全螢幕設定 */
@@ -27,6 +30,7 @@
         height: 100vh;
         position: relative;
         cursor: grab;
+        touch-action: none; /* 防止手機瀏覽器預設滑動手勢衝突 */
       }
       #viewport:active {
         cursor: grabbing;
@@ -139,9 +143,7 @@
       .node-video {
         mix-blend-mode: screen !important;
         background-color: transparent !important;
-        /* 須彌山會成功就是因為有加 opacity！給它加上 0.98，迫使瀏覽器正確與背景混合 */
         opacity: 0.98 !important;
-        /* 壓平 MP4 壓縮後暗部的灰黑噪點，確保完全透明無黑框 */
         filter: contrast(180%) brightness(75%);
       }
 
@@ -152,7 +154,6 @@
 
       .node-video:hover {
         transform: scale(1.05);
-        /* 懸浮時保持壓暗濾鏡，避免懸浮瞬間黑框閃現 */
         filter: contrast(180%) brightness(75%);
       }
 
@@ -178,6 +179,25 @@
         margin-top: 3px;
       }
 
+      /* 行動裝置/平板專屬：選單展開/收合開關按鈕 */
+      #nav-toggle-btn {
+        display: none;
+        position: fixed;
+        left: 15px;
+        top: 15px;
+        z-index: 105;
+        background: rgba(20, 15, 12, 0.92);
+        border: 1px solid #d4af37;
+        color: #f1c40f;
+        padding: 8px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        letter-spacing: 1px;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+        user-select: none;
+      }
+
       /* 左上方古典層級導覽樹 (三界與六道從屬關係) */
       #quick-nav {
         position: fixed;
@@ -195,6 +215,9 @@
         gap: 5px;
         z-index: 100;
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
+        transition:
+          transform 0.3s ease,
+          opacity 0.3s ease;
       }
       .nav-title {
         color: #d4af37;
@@ -269,22 +292,20 @@
       /* 古典風格的資訊側邊欄 (加入垂直捲軸支援與平滑滾動) */
       #info-panel {
         position: fixed;
-        right: -400px; /* 寬度加寬到 400px */
+        right: -100%;
         top: 0;
         width: 400px;
+        max-width: 100vw;
         height: 100%;
-        overflow-y: auto; /* 內容超出畫面時自動產生垂直捲軸 */
-        /* 仿古深色絲綢/墨色質感 */
+        overflow-y: auto;
         background-color: #1a1512;
-        /* 傳統的赭石色邊框 */
         border-left: 3px solid #8b5a2b;
-        color: #e0d8c8; /* 仿古宣紙文字色 */
+        color: #e0d8c8;
         padding: 40px;
         box-sizing: border-box;
         transition: right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
         box-shadow: -10px 0 30px rgba(0, 0, 0, 0.8);
         z-index: 1000;
-        /* 加入宣紙紋理的 CSS 漸層雜訊 */
         background-image: radial-gradient(
           rgba(255, 255, 255, 0.03) 1px,
           transparent 1px
@@ -503,11 +524,11 @@
         color: white;
       }
 
-      /* 現代水平頂部標題排版，徹底解決直書文字過長換行擠壓內容的問題 */
+      /* 現代水平頂部標題排版 */
       #panel-title {
         writing-mode: horizontal-tb;
         font-size: 26px;
-        color: #d4af37; /* 泥金色 */
+        color: #d4af37;
         letter-spacing: 2px;
         float: none;
         margin-left: 0;
@@ -515,12 +536,12 @@
         margin-bottom: 8px;
         border-left: none;
         padding-left: 0;
-        padding-right: 25px; /* 避開右上角關閉按鈕 */
+        padding-right: 25px;
         line-height: 1.3;
       }
 
       #panel-subtitle {
-        color: #c97a7e; /* 硃砂淡紅 */
+        color: #c97a7e;
         font-size: 15px;
         margin-top: 0;
         margin-bottom: 15px;
@@ -550,7 +571,7 @@
         color: #f0e6d2;
       }
 
-      /* 山體內部的純標籤熱區 (完全透明無陰影，不遮擋須彌山主圖) */
+      /* 山體內部的純標籤熱區 */
       .node.hotspot-node {
         border: none !important;
         background: transparent !important;
@@ -591,6 +612,36 @@
         background: #8b5a2b;
         color: #fff;
         border-color: #d4af37;
+      }
+
+      /* 行動裝置與平板響應式優化 (手機/平板寬度 <= 768px) */
+      @media (max-width: 768px) {
+        #nav-toggle-btn {
+          display: block; /* 顯示手機端開關按鈕 */
+        }
+        #quick-nav {
+          left: 10px;
+          top: 60px;
+          width: calc(100vw - 40px);
+          max-width: 320px;
+          max-height: 75vh;
+          transform: translateY(-20px);
+          opacity: 0;
+          pointer-events: none;
+        }
+        #quick-nav.open {
+          transform: translateY(0);
+          opacity: 1;
+          pointer-events: auto;
+        }
+        #info-panel {
+          width: 100vw;
+          padding: 25px 20px;
+          right: -100vw;
+        }
+        #info-panel.active {
+          right: 0;
+        }
       }
     </style>
   </head>
@@ -646,9 +697,13 @@
         互動畫布
       </p>
       <button class="enter-btn" onclick="enterExperience()">進入探索</button>
-      <!-- 若有自備的點擊音效，請將 src 換成你的音效檔路徑 -->
       <audio id="enter-sound" src="./enter.mp3" preload="auto"></audio>
     </div>
+
+    <!-- 手機端目錄切換按鈕 -->
+    <button id="nav-toggle-btn" onclick="toggleQuickNav(event)">
+      ☰ 三界六道目錄
+    </button>
 
     <!-- 快速導航導覽列 (點擊直接聯動展示右側面板) -->
     <div id="quick-nav">
@@ -801,7 +856,6 @@
           muted
           autoplay
         ></video>
-        <!-- JS 將會在這裡渲染節點 -->
       </div>
     </div>
 
@@ -875,7 +929,6 @@
       <div id="unit-converter-box">
         <div class="converter-title">✦ 《俱舍論》時空度量衡轉換器 ✦</div>
 
-        <!-- 長度 / 空間距離換算 -->
         <div style="font-size: 12px; color: #bfa588; margin-bottom: 4px">
           【空間度量衡換算】：
         </div>
@@ -898,7 +951,6 @@
         </div>
         <div id="dist-result" class="converter-result">--</div>
 
-        <!-- 時間換算 -->
         <div style="font-size: 12px; color: #bfa588; margin: 10px 0 4px 0">
           【時間度量衡換算】：
         </div>
@@ -931,11 +983,10 @@
 
     <script>
       /**
-       * 1. 完整宇宙觀 JSON 結構 (修復語法錯誤，夜摩天以上全平移，包含忉利天)
-       * 座標系參考：寬 4000, 高 12000，中心軸 X = 2000
+       * 1. 完整宇宙觀 JSON 結構
        */
       const cosmologyData = [
-        // --- 1. 出三界 聖者法界 (頂層) --- 依統一 150px 間距對齊
+        // --- 1. 出三界 聖者法界 (頂層) ---
         {
           id: "pure-land",
           title: "四聖法界・四種淨土",
@@ -1003,7 +1054,7 @@
           ],
         },
 
-        // --- 2. 無色界四空天 --- 依統一 150px 間距對齊
+        // --- 2. 無色界四空天 ---
         {
           id: "formless-realm",
           title: "無色界四空天",
@@ -1023,7 +1074,7 @@
           },
         },
 
-        // --- 3. 色界十八天 (禪天) --- 依統一 150px 間距對齊 (底部到 y: 1800，與他化自在天維持 150px 間距)
+        // --- 3. 色界十八天 (禪天) ---
         {
           id: "form-realm",
           title: "色界十八天 (初禪至四禪)",
@@ -1067,7 +1118,7 @@
           ],
         },
 
-        // --- 4. 欲界第六天：他化自在天 (空居天頂) --- 尺寸放大 30% 並居中
+        // --- 4. 欲界第六天：他化自在天 ---
         {
           id: "paranirmita",
           title: "他化自在天",
@@ -1087,7 +1138,7 @@
           },
         },
 
-        // --- 5. 欲界第五天：化樂天 (空居) ---
+        // --- 5. 欲界第五天：化樂天 ---
         {
           id: "nirmanarati",
           title: "化樂天 (樂變化天)",
@@ -1107,7 +1158,7 @@
           },
         },
 
-        // --- 6. 欲界第四天：兜率天 (知足天・核心轉折) ---
+        // --- 6. 欲界第四天：兜率天 ---
         {
           id: "tushita",
           title: "兜率陀天 (知足天宮)",
@@ -1127,7 +1178,7 @@
           },
         },
 
-        // --- 7. 欲界第三天：夜摩天 (空居) ---
+        // --- 7. 欲界第三天：夜摩天 ---
         {
           id: "yama",
           title: "夜摩天 (善時天・空居之始)",
@@ -1147,7 +1198,7 @@
           },
         },
 
-        // --- 8. 欲界第二天：忉利天 (須彌山頂・地居熱區) ---
+        // --- 8. 欲界第二天：忉利天 ---
         {
           id: "trayastrimsa",
           title: "忉利天 (三十三天)",
@@ -1161,7 +1212,7 @@
           },
         },
 
-        // --- 9. 欲界第一天：四大天王天 (須彌山腰・地居熱區) ---
+        // --- 9. 欲界第一天：四大天王天 ---
         {
           id: "caturmaharaja",
           title: "四大天王天",
@@ -1175,7 +1226,7 @@
           },
         },
 
-        // --- 7. 人道：四大部洲 ---
+        // --- 10. 人道：四大部洲 ---
         {
           id: "human-realm",
           title: "人道 (四大部洲)",
@@ -1245,7 +1296,7 @@
           ],
         },
 
-        // --- 8. 阿修羅道 ---
+        // --- 11. 阿修羅道 ---
         {
           id: "asura-realm",
           title: "阿修羅道 (非天)",
@@ -1311,7 +1362,7 @@
           ],
         },
 
-        // --- 9. 畜生道 (傍生界) ---
+        // --- 12. 畜生道 ---
         {
           id: "animal-realm",
           title: "畜生道 (傍生界)",
@@ -1331,7 +1382,7 @@
           },
         },
 
-        // --- 10. 餓鬼道 ---
+        // --- 13. 餓鬼道 ---
         {
           id: "hungry-ghost-realm",
           title: "餓鬼道 (幽冥界)",
@@ -1351,7 +1402,7 @@
           },
         },
 
-        // --- 11. 地獄道 ---
+        // --- 14. 地獄道 ---
         {
           id: "hell-realm",
           title: "地獄道 (八熱八寒)",
@@ -1381,7 +1432,14 @@
       const subTitleEl = document.getElementById("panel-subtitle");
       const contentEl = document.getElementById("panel-content");
 
-      // 祥雲過渡層資料 (穿插於各界交界處，配合新頂部高度)
+      // 手機端目錄切換
+      function toggleQuickNav(e) {
+        if (e) e.stopPropagation();
+        const nav = document.getElementById("quick-nav");
+        nav.classList.toggle("open");
+      }
+
+      // 祥雲過渡層資料
       const cloudLayers = [
         { y: -300, opacity: 0.35, scale: 1.2 },
         { y: 675, opacity: 0.45, scale: 1.4 },
@@ -1394,7 +1452,6 @@
         { y: 8900, opacity: 0.7, scale: 1.4 },
       ];
 
-      // 渲染祥雲過渡層 (加上 cloud-layer 類別以支援大千模式淡出)
       cloudLayers.forEach((cloud) => {
         const cloudEl = document.createElement("div");
         cloudEl.className = "cloud-layer";
@@ -1412,13 +1469,11 @@
         canvas.appendChild(cloudEl);
       });
 
-      // 擴充結構化元數據
       const metaLifespanEl = document.getElementById("meta-lifespan");
       const metaDesireEl = document.getElementById("meta-desire");
       const metaDeitiesEl = document.getElementById("meta-deities");
       const metaStatusEl = document.getElementById("meta-status");
 
-      // 補強 JSON 節點的結構化資訊
       cosmologyData.forEach((node) => {
         if (node.id === "pure-land") {
           node.details.lifespan = "超越時空數劫・永恆真如無量壽";
@@ -1519,7 +1574,6 @@
         }
       });
 
-      // 瀏覽器音訊解鎖標記
       let isAudioUnlocked = false;
       function unlockAudioContext() {
         if (!isAudioUnlocked) {
@@ -1531,12 +1585,10 @@
       window.addEventListener("wheel", unlockAudioContext);
       window.addEventListener("keydown", unlockAudioContext);
 
-      // 處理入口畫面的點擊與音效
       function enterExperience() {
         const splash = document.getElementById("splash-screen");
         const enterSound = document.getElementById("enter-sound");
 
-        // 播放自訂的進入音效
         if (enterSound) {
           enterSound.volume = 0.6;
           enterSound
@@ -1544,14 +1596,10 @@
             .catch((e) => console.log("無音效檔案或播放失敗", e));
         }
 
-        // 觸發全域音訊解鎖 (迫使瀏覽器允許後續 MP4 的聲音播放)
         unlockAudioContext();
-
-        // 淡出並隱藏入口畫面
         splash.classList.add("hidden");
       }
 
-      // 根據 JSON 資料生成 DOM 節點 (完全移除報錯的 WebGL Canvas，回歸純淨的 Video 渲染)
       cosmologyData.forEach((node) => {
         const el = document.createElement("div");
         el.className = node.isHotspot ? "node hotspot-node" : "node";
@@ -1575,7 +1623,6 @@
             toggleInfoPanel(node);
           });
         } else {
-          // 【修復】：video 與 img 改用同一個相對定位容器疊放，並預設隱藏 video，避免載入前出現空白矩形
           const mediaWrap = document.createElement("div");
           mediaWrap.style.position = "relative";
           mediaWrap.style.width = "100%";
@@ -1606,23 +1653,17 @@
 
           if (node.visuals.videoSrc) {
             videoElement.src = node.visuals.videoSrc;
-
-            // 當影片成功讀取並開始播放時，隱藏備用圖片
             videoElement.addEventListener("playing", () => {
               imgElement.style.display = "none";
               videoElement.style.display = "block";
             });
-
-            // 如果影片載入失敗，隱藏影片，切換為備用圖片
             videoElement.onerror = () => {
               videoElement.style.display = "none";
               imgElement.style.display = "block";
             };
-
             mediaWrap.appendChild(videoElement);
             mediaWrap.appendChild(imgElement);
           } else {
-            // 如果沒有填寫影片路徑，則只顯示圖片
             imgElement.style.display = "block";
             mediaWrap.appendChild(imgElement);
           }
@@ -1640,7 +1681,6 @@
 
           el.appendChild(labelBox);
 
-          // 點擊事件綁定 (點擊影片或標籤皆可展開右側資訊面板)
           [videoElement, imgElement, labelBox].forEach((target) => {
             target.addEventListener("pointerdown", (e) => {
               e.stopPropagation();
@@ -1652,9 +1692,11 @@
         canvas.appendChild(el);
       });
 
-      // 實時計算畫面中心點最接近的節點：高亮總覽清單 ＋ 控制 MP4 播放與聲音
       function updateNavHighlight() {
-        const availableCenterX = 280 + (window.innerWidth - 280) / 2;
+        const isMobile = window.innerWidth <= 768;
+        const availableCenterX = isMobile
+          ? window.innerWidth / 2
+          : 280 + (window.innerWidth - 280) / 2;
         const availableCenterY = window.innerHeight / 2;
         const currentCanvasCenterY = (availableCenterY - translateY) / scale;
 
@@ -1671,7 +1713,6 @@
         });
 
         if (closestNode) {
-          // 1. 高亮左側總覽清單
           const navItems = document.querySelectorAll("#quick-nav .nav-item");
           navItems.forEach((item) => {
             if (item.getAttribute("data-node-id") === closestNode.id) {
@@ -1681,7 +1722,6 @@
             }
           });
 
-          // 2. 影片有聲自動播放控制 (包含一般天界節點與須彌山主體 MP4)
           const sumeruVid = document.getElementById("sumeru-mountain");
           const isAtSumeru =
             closestNode.id === "trayastrimsa" ||
@@ -1737,14 +1777,11 @@
         }
       }
 
-      // 確保點擊或觸控也能完美解鎖瀏覽器音訊 (因部分瀏覽器不承認滾輪為有效互動)
       window.addEventListener("click", unlockAudioContext);
       window.addEventListener("touchstart", unlockAudioContext);
 
-      // 追蹤當前開啟的節點 ID
       let currentActiveNodeId = null;
 
-      // 經典業因果報流轉關係對照庫 (來源因緣與福盡去向)
       const karmaRelations = {
         "pure-land": {
           sources: [
@@ -1991,7 +2028,6 @@
         },
       };
 
-      // 輔助函式：繪製因果流轉光束曲線
       function renderKarmaPaths(currentNodeId) {
         const karmaSvg = document.getElementById("karma-svg");
         if (!karmaSvg) return;
@@ -2004,7 +2040,6 @@
         const cX = currentTarget.layout.x + currentTarget.layout.width / 2;
         const cY = currentTarget.layout.y + currentTarget.layout.height / 2;
 
-        // 1. 繪製「如何投生至此 (綠色光束)」
         if (relation.sources) {
           relation.sources.forEach((src) => {
             const srcNode = cosmologyData.find((n) => n.id === src.from);
@@ -2025,7 +2060,6 @@
               path.setAttribute("fill", "none");
               path.setAttribute("stroke", "#2ecc71");
               path.setAttribute("stroke-width", "5");
-              path.setAttribute("class", "karma-path-in");
               karmaSvg.appendChild(path);
 
               const glow = document.createElementNS(
@@ -2044,7 +2078,6 @@
           });
         }
 
-        // 2. 繪製「福盡將往何處去 (紅色光束)」
         if (relation.destinations) {
           relation.destinations.forEach((dest) => {
             const destNode = cosmologyData.find((n) => n.id === dest.to);
@@ -2065,7 +2098,6 @@
               path.setAttribute("fill", "none");
               path.setAttribute("stroke", "#e74c3c");
               path.setAttribute("stroke-width", "5");
-              path.setAttribute("class", "karma-path-out");
               karmaSvg.appendChild(path);
 
               const glow = document.createElementNS(
@@ -2090,10 +2122,8 @@
         if (karmaSvg) karmaSvg.innerHTML = "";
       }
 
-      // 設定畫布容器的過渡濾鏡樣式 (支援背景變暗與模糊壓暗特效)
       canvas.style.transition = "filter 0.5s ease";
 
-      // 輔助函式：套用/解除視圖暗化與模糊焦點濾鏡
       function setVignetteFocus(active) {
         if (active) {
           canvas.style.filter = "brightness(0.35) blur(4px)";
@@ -2103,7 +2133,6 @@
         }
       }
 
-      // 九山八海（七金山、八海、鐵圍山）之經典階梯同心層級資料
       const nineMountainsEightSeasData = [
         {
           name: "須彌山 (妙高山)",
@@ -2209,10 +2238,14 @@
         },
       ];
 
-      // 切換說明面板開關狀態 (點擊同一個節點收起，點擊不同節點切換，並支援四大部洲與九山八海階梯視圖)
       function toggleInfoPanel(node) {
         const tabContainer = document.getElementById("continent-tab-container");
         const diagramBox = document.getElementById("diagram-box");
+
+        // 若在手機模式，開啟詳細面板時自動收合左側目錄
+        if (window.innerWidth <= 768) {
+          document.getElementById("quick-nav").classList.remove("open");
+        }
 
         if (
           panel.classList.contains("active") &&
@@ -2226,7 +2259,6 @@
           titleEl.textContent = node.title;
           subTitleEl.textContent = node.details.subtitle;
 
-          // 組裝業因果報路徑文字說明
           const karma = karmaRelations[node.id];
           let karmaText = "";
           if (karma) {
@@ -2254,10 +2286,8 @@
           metaDeitiesEl.textContent = node.details.deities || "--";
           metaStatusEl.textContent = node.details.status || "--";
 
-          // 於畫布上即時繪製對應之因果流轉光束曲線 (綠色入流、紅色出流)
           renderKarmaPaths(node.id);
 
-          // 若為四聖法界節點，渲染四種淨土體系二級分支按鈕
           if (node.id === "pure-land" && node.pureLandDivisions) {
             tabContainer.innerHTML = "";
             tabContainer.style.display = "flex";
@@ -2342,7 +2372,6 @@
             tabContainer.innerHTML = "";
             tabContainer.style.display = "flex";
 
-            // 1. 九山八海橫向展開按鈕
             const seaBtn = document.createElement("button");
             seaBtn.className = "continent-tab-btn";
             seaBtn.textContent = "🌊 九山八海全圖";
@@ -2352,9 +2381,6 @@
                 .querySelectorAll(".continent-tab-btn")
                 .forEach((b) => b.classList.remove("active-tab"));
               seaBtn.classList.add("active-tab");
-
-              // 顯示同心圓圖形
-              renderNineMountainsSvg();
 
               titleEl.textContent = "九山八海・七金山";
               subTitleEl.textContent =
@@ -2373,7 +2399,6 @@
             });
             tabContainer.appendChild(seaBtn);
 
-            // 2. 四大部洲子標籤按鈕
             if (node.continents && node.continents.length > 0) {
               node.continents.forEach((cont) => {
                 const btn = document.createElement("button");
@@ -2386,8 +2411,7 @@
                     .forEach((b) => b.classList.remove("active-tab"));
                   btn.classList.add("active-tab");
 
-                  // 切換到單一部洲時隱藏九山八海俯瞰圖
-                  diagramBox.style.display = "none";
+                  if (diagramBox) diagramBox.style.display = "none";
 
                   titleEl.textContent = cont.name;
                   subTitleEl.textContent = `【外形】：${cont.shape}`;
@@ -2402,7 +2426,6 @@
             }
           } else {
             tabContainer.style.display = "none";
-            const diagramBox = document.getElementById("diagram-box");
             if (diagramBox) diagramBox.style.display = "none";
           }
 
@@ -2411,13 +2434,16 @@
         }
       }
 
-      // 左側導覽列跳轉：自動收起右側說明面板並平滑移動視角
       function selectNodeById(nodeId) {
-        // 若說明欄處於展開狀態，自動收起
         if (panel.classList.contains("active")) {
           panel.classList.remove("active");
           currentActiveNodeId = null;
           setVignetteFocus(false);
+        }
+
+        // 手機點擊跳轉後自動收起導覽列
+        if (window.innerWidth <= 768) {
+          document.getElementById("quick-nav").classList.remove("open");
         }
 
         const node = cosmologyData.find((n) => n.id === nodeId);
@@ -2426,9 +2452,11 @@
         const centerX = node.layout.x + node.layout.width / 2;
         const centerY = node.layout.y + node.layout.height / 2;
 
-        const targetScale = 0.45;
-        // 計算主體置中位置（避開左側 280px 導覽列）
-        const availableCenterX = 280 + (window.innerWidth - 280) / 2;
+        const isMobile = window.innerWidth <= 768;
+        const targetScale = isMobile ? 0.32 : 0.45;
+        const availableCenterX = isMobile
+          ? window.innerWidth / 2
+          : 280 + (window.innerWidth - 280) / 2;
         const availableCenterY = window.innerHeight / 2;
 
         const targetTranslateX = availableCenterX - centerX * targetScale;
@@ -2437,16 +2465,12 @@
         smoothJumpTo(targetTranslateX, targetTranslateY, targetScale, 600);
       }
 
-      // 關閉面板
       document.getElementById("close-panel").addEventListener("click", () => {
         panel.classList.remove("active");
         currentActiveNodeId = null;
         setVignetteFocus(false);
       });
 
-      /**
-       * 平滑動畫跳轉鏡頭功能 (Smooth Pan & Zoom Animation)
-       */
       let animId = null;
       function smoothJumpTo(
         endTranslateX,
@@ -2465,7 +2489,6 @@
         function animate(currentTime) {
           const elapsed = currentTime - startTime;
           const progress = Math.min(elapsed / duration, 1);
-          // Ease-out cubic 曲線
           const ease = 1 - Math.pow(1 - progress, 3);
 
           scale = startScale + (targetScale - startScale) * ease;
@@ -2484,18 +2507,21 @@
       }
 
       /**
-       * 3. 畫布拖曳與縮放邏輯 (Pan & Zoom)
+       * 3. 畫布拖曳與縮放邏輯 (Pan & Zoom，含雙指觸控手勢)
        */
       const viewport = document.getElementById("viewport");
-      let scale = 0.45; // 1) 預設放大比例，開啟時直接清晰檢視細節
-      // 預設初始位置：自動向右避開左側導覽框，鏡頭對準須彌山核心區 (Y: 5900)
-      let translateX = 280 + (window.innerWidth - 280) / 2 - 2000 * scale;
+      const isMobile = window.innerWidth <= 768;
+      let scale = isMobile ? 0.32 : 0.45;
+      let translateX =
+        (isMobile
+          ? window.innerWidth / 2
+          : 280 + (window.innerWidth - 280) / 2) -
+        2000 * scale;
       let translateY = window.innerHeight / 2 - 5900 * scale;
 
       let isDragging = false;
       let startX, startY;
 
-      // 動態建立三千大千世界微塵小世界網 (中心保留最強光核，象徵原本探索的須彌山娑婆世界)
       function initMacroCosmos() {
         const cosmosLayer = document.getElementById("macro-cosmos-layer");
         if (!cosmosLayer) return;
@@ -2503,7 +2529,6 @@
         let svgHtml = `
           <svg class="cosmos-matrix-svg" width="30000" height="30000" viewBox="-15000 -15000 30000 30000">
             <defs>
-              <!-- 周圍千百億小世界光暈 -->
               <radialGradient id="worldGlow" cx="50%" cy="50%" r="50%">
                 <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
                 <stop offset="35%" stop-color="#f1c40f" stop-opacity="0.85" />
@@ -2511,7 +2536,6 @@
                 <stop offset="100%" stop-color="#000000" stop-opacity="0" />
               </radialGradient>
 
-              <!-- 中心本源世界耀眼金光核 (核心標誌) -->
               <radialGradient id="originCoreGlow" cx="50%" cy="50%" r="50%">
                 <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
                 <stop offset="20%" stop-color="#fff8db" stop-opacity="1" />
@@ -2521,18 +2545,14 @@
               </radialGradient>
             </defs>
 
-            <!-- 1. 中心原本世界 (最耀眼大光核與雙重光暈) -->
             <g transform="translate(0, 0)">
-              <!-- 外層脈衝光芒環 -->
               <circle cx="0" cy="0" r="280" fill="none" stroke="rgba(241, 196, 15, 0.4)" stroke-width="3" stroke-dasharray="12, 8" />
               <circle cx="0" cy="0" r="200" fill="none" stroke="rgba(255, 255, 255, 0.7)" stroke-width="4" />
-              <!-- 超強本源光核 -->
               <circle cx="0" cy="0" r="160" fill="url(#originCoreGlow)" style="filter: drop-shadow(0 0 45px #f1c40f);" />
               <text x="0" y="8" font-size="28" fill="#ffffff" text-anchor="middle" font-weight="bold" letter-spacing="4">娑婆世界</text>
             </g>
         `;
 
-        // 產生 1,000 個微縮小世界節點，依費馬螺線分佈呈現千百億世界海格局
         const totalWorlds = 1000;
         const c = 380;
         for (let i = 1; i <= totalWorlds; i++) {
@@ -2544,9 +2564,7 @@
 
           svgHtml += `
             <g transform="translate(${wx}, ${wy})">
-              <!-- 外圍鐵圍山光暈環 -->
               <circle cx="0" cy="0" r="${size * 1.6}" fill="none" stroke="rgba(212, 175, 55, 0.4)" stroke-width="1.5" />
-              <!-- 小世界中心光核 (須彌山微塵) -->
               <circle cx="0" cy="0" r="${size}" fill="url(#worldGlow)" />
             </g>
           `;
@@ -2562,7 +2580,6 @@
           canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
           updateNavHighlight();
 
-          // 當縮小至極限 (scale < 0.05) 時，切換為「一微塵中見大千」三千大千世界矩陣並隱藏原三界
           const cosmosLayer = document.getElementById("macro-cosmos-layer");
           const cosmosHint = document.getElementById("macro-cosmos-hint");
 
@@ -2581,128 +2598,140 @@
         });
       }
 
-      // 初始渲染
       updateTransform();
 
-      // 點擊說明欄以外的任何區域自動收起說明欄
+      // 點擊空白處自動關閉面板與導覽列
       window.addEventListener("pointerdown", (e) => {
-        if (!panel.classList.contains("active")) return;
-        // 如果點擊目標在側邊欄內部、快捷導覽列內部，或是大千世界提示鈕，則不觸發關閉
         if (
-          panel.contains(e.target) ||
-          e.target.closest("#quick-nav") ||
-          e.target.closest("#macro-cosmos-hint") ||
-          e.target.closest(".node-label-box") ||
-          e.target.closest(".node-img") ||
-          e.target.closest(".node-video")
+          !panel.contains(e.target) &&
+          !e.target.closest("#quick-nav") &&
+          !e.target.closest("#nav-toggle-btn") &&
+          !e.target.closest("#macro-cosmos-hint") &&
+          !e.target.closest(".node-label-box") &&
+          !e.target.closest(".node-img") &&
+          !e.target.closest(".node-video")
         ) {
-          return;
+          if (panel.classList.contains("active")) {
+            panel.classList.remove("active");
+            currentActiveNodeId = null;
+            setVignetteFocus(false);
+          }
+          if (window.innerWidth <= 768) {
+            document.getElementById("quick-nav").classList.remove("open");
+          }
         }
-        panel.classList.remove("active");
-        currentActiveNodeId = null;
-        setVignetteFocus(false);
       });
 
-      // 滑鼠/觸控拖曳 (Pan)
+      // 觸控手勢與拖曳平移 (支援多點觸控 Pinch-to-zoom)
+      const activePointers = new Map();
+      let initialDistance = 0;
+      let initialScale = scale;
+
       viewport.addEventListener("pointerdown", (e) => {
-        if (e.target !== viewport && e.target !== canvas) return; // 點擊在節點上不拖曳
-        isDragging = true;
-        startX = e.clientX - translateX;
-        startY = e.clientY - translateY;
+        if (e.target !== viewport && e.target !== canvas) return;
+        activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+        if (activePointers.size === 1) {
+          isDragging = true;
+          startX = e.clientX - translateX;
+          startY = e.clientY - translateY;
+        } else if (activePointers.size === 2) {
+          isDragging = false;
+          const points = Array.from(activePointers.values());
+          initialDistance = Math.hypot(
+            points[0].x - points[1].x,
+            points[0].y - points[1].y,
+          );
+          initialScale = scale;
+        }
         viewport.setPointerCapture(e.pointerId);
       });
 
       viewport.addEventListener("pointermove", (e) => {
-        if (!isDragging) return;
-        translateX = e.clientX - startX;
-        translateY = e.clientY - startY;
-        updateTransform();
+        if (!activePointers.has(e.pointerId)) return;
+        activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+        if (activePointers.size === 1 && isDragging) {
+          translateX = e.clientX - startX;
+          translateY = e.clientY - startY;
+          updateTransform();
+        } else if (activePointers.size === 2) {
+          const points = Array.from(activePointers.values());
+          const currentDist = Math.hypot(
+            points[0].x - points[1].x,
+            points[0].y - points[1].y,
+          );
+          if (initialDistance > 0) {
+            const midX = (points[0].x + points[1].x) / 2;
+            const midY = (points[0].y + points[1].y) / 2;
+            const factor = currentDist / initialDistance;
+            let newScale = Math.max(0.01, Math.min(initialScale * factor, 2));
+
+            translateX = midX - (midX - translateX) * (newScale / scale);
+            translateY = midY - (midY - translateY) * (newScale / scale);
+            scale = newScale;
+            updateTransform();
+          }
+        }
       });
 
-      viewport.addEventListener("pointerup", (e) => {
-        isDragging = false;
-        viewport.releasePointerCapture(e.pointerId);
-      });
+      function handlePointerEnd(e) {
+        activePointers.delete(e.pointerId);
+        if (activePointers.size < 2) {
+          initialDistance = 0;
+        }
+        if (activePointers.size === 1) {
+          isDragging = true;
+          const pt = Array.from(activePointers.values())[0];
+          startX = pt.x - translateX;
+          startY = pt.y - translateY;
+        } else if (activePointers.size === 0) {
+          isDragging = false;
+        }
+        try {
+          viewport.releasePointerCapture(e.pointerId);
+        } catch (err) {}
+      }
 
-      // 觸控板與滾輪處理：支援雙指滑動平移、雙指開合縮放、2) 按住 Command + 滾輪上/下縮放 (允許縮小至 0.01)
+      viewport.addEventListener("pointerup", handlePointerEnd);
+      viewport.addEventListener("pointercancel", handlePointerEnd);
+
+      // 電腦端滾輪縮放
       viewport.addEventListener(
         "wheel",
         (e) => {
-          e.preventDefault(); // 阻止瀏覽器預設滾動與原生縮放
-
+          e.preventDefault();
           const rect = viewport.getBoundingClientRect();
           const mouseX = e.clientX - rect.left;
           const mouseY = e.clientY - rect.top;
 
-          // 判斷是否為縮放操作：觸控板雙指開合 (ctrlKey) 或 按住 Command 鍵滾動 (metaKey)
           if (e.ctrlKey || e.metaKey) {
             const zoomFactor = Math.exp(-e.deltaY * 0.01);
             let newScale = scale * zoomFactor;
-            // 允許縮小至 0.01，解鎖大千世界
             newScale = Math.max(0.01, Math.min(newScale, 2));
 
-            // 以滑鼠/手勢當前指向位置為中心進行縮放
             translateX = mouseX - (mouseX - translateX) * (newScale / scale);
             translateY = mouseY - (mouseY - translateY) * (newScale / scale);
             scale = newScale;
           } else {
-            // 一般雙指滑動：平移移動畫布
             translateX -= e.deltaX;
             translateY -= e.deltaY;
           }
-
           updateTransform();
         },
         { passive: false },
       );
 
-      /**
-       * 視角控制輔助功能
-       */
-      function zoomBy(factor) {
-        const newScale = Math.max(0.01, Math.min(scale * factor, 2));
-        const centerX = window.innerWidth / 2;
-        const centerY = window.innerHeight / 2;
-        translateX = centerX - (centerX - translateX) * (newScale / scale);
-        translateY = centerY - (centerY - translateY) * (newScale / scale);
-        scale = newScale;
-        updateTransform();
-      }
-
       function resetView() {
-        const defaultScale = 0.45;
+        const isMob = window.innerWidth <= 768;
+        const defaultScale = isMob ? 0.32 : 0.45;
         const defaultTranslateX =
-          280 + (window.innerWidth - 280) / 2 - 2000 * defaultScale;
+          (isMob
+            ? window.innerWidth / 2
+            : 280 + (window.innerWidth - 280) / 2) -
+          2000 * defaultScale;
         const defaultTranslateY = window.innerHeight / 2 - 5900 * defaultScale;
         smoothJumpTo(defaultTranslateX, defaultTranslateY, defaultScale, 800);
-      }
-
-      // 點擊「一微塵中見大千」膠囊按鈕時，自動遠距縮放並展開三千大千世界結構說明面板
-      function openMacroCosmosPanel() {
-        const tabContainer = document.getElementById("continent-tab-container");
-        const diagramBox = document.getElementById("diagram-box");
-
-        currentActiveNodeId = "macro-cosmos";
-        titleEl.textContent = "三千大千世界・華藏世界海";
-        subTitleEl.textContent = "《俱舍論》與《華嚴經》宇宙宏觀尺度網";
-
-        if (tabContainer) tabContainer.style.display = "none";
-        if (diagramBox) diagramBox.style.display = "none";
-
-        metaLifespanEl.textContent = "無量無數大劫 (成住壞空循環不息)";
-        metaDesireEl.textContent = "涵蓋十方微塵剎土一切眾生境界";
-        metaDeitiesEl.textContent = "清淨法身毘盧遮那佛、一佛剎教化釋迦牟尼佛";
-        metaStatusEl.textContent = "一微塵中具足大千・重重無盡事事無礙";
-
-        contentEl.textContent = `【《俱舍論》三千大千世界遞增體系】：\n\n• 小世界（一世界）：以一座須彌山為中心，日月環繞，七金山八海、四大部洲、地獄乃至色界初禪天為一個基礎世界單元。\n\n• 小千世界：以 1,000 個小世界為集合，上覆至色界「二禪天」（光音天等）。\n\n• 中千世界：以 1,000 個小千世界（即 100 萬個小世界）為集合，上覆至色界「三禪天」（遍淨天等）。\n\n• 大千世界（三千大千世界）：以 1,000 個中千世界（即整整 10 億個須彌山小世界）為集合，上覆至色界「四禪天」。因三次千倍遞進乘積，故稱「三千大千世界」。\n\n━━━━━━━━━━━━━━━━━━━━\n【《華嚴經》一微塵中見大千】：\n一尊佛所教化的領土即為一個三千大千世界（一佛剎）。在大乘《華嚴經》「華藏世界品」中，無量無邊的大千世界有如微塵網絡般懸浮於普光香水海之中，一粒微塵內亦含攝十方剎海，一即一切，重重無盡。`;
-
-        panel.classList.add("active");
-
-        // 自動平滑過渡至宏觀大千星系視角 (scale: 0.015)
-        const targetScale = 0.015;
-        const targetTranslateX = window.innerWidth / 2 - 2000 * targetScale;
-        const targetTranslateY = window.innerHeight / 2 - 6000 * targetScale;
-        smoothJumpTo(targetTranslateX, targetTranslateY, targetScale, 1000);
       }
 
       /**
@@ -2716,13 +2745,12 @@
       const timeUnitEl = document.getElementById("time-unit");
       const timeResultEl = document.getElementById("time-result");
 
-      // 距離基準：以公尺 (meter) 為基準單位
       const distanceRatios = {
-        anguli: 0.018229, // 1 指 = 1.82 cm
-        hasta: 0.4375, // 1 肘 = 24 指 = 43.75 cm
-        dhanus: 1.75, // 1 尋 (弓) = 4 肘 = 1.75 m
-        krosa: 1400, // 1 俱盧舍 (拘盧舍) = 800 弓 = 1.4 km
-        yojana: 11200, // 1 由旬 (俱舍論常規大由旬) = 8 俱盧舍 = 11.2 km
+        anguli: 0.018229,
+        hasta: 0.4375,
+        dhanus: 1.75,
+        krosa: 1400,
+        yojana: 11200,
       };
 
       function calculateDistance() {
@@ -2732,7 +2760,7 @@
 
         const km = meters / 1000;
         const lightSeconds = meters / 299792458;
-        const earthCircumferenceRatio = (km / 40075).toFixed(3); // 地球赤道周長約 40,075 km
+        const earthCircumferenceRatio = (km / 40075).toFixed(3);
 
         distResultEl.innerHTML = `
           • 現代公制：<b>${km.toLocaleString(undefined, { maximumFractionDigits: 3 })}</b> 公里 (km)<br>
@@ -2741,15 +2769,14 @@
         `;
       }
 
-      // 時間基準：以秒 (second) 為基準單位
       const timeRatios = {
-        ksana: 0.013333, // 1 剎那 = 1/75 秒 ≈ 0.0133 秒
-        tatksana: 1.6 / 60, // 1 怛剎那 = 120 剎那 ≈ 0.0267 秒
-        lava: 1.6, // 1 臘縛 = 60 怛剎那 = 1.6 秒
-        muhurta: 96, // 1 牟呼栗多 = 30 臘縛 = 48 分鐘 = 2880 秒 (俱舍標準)
-        heavenYear: 365.25 * 86400 * 36500, // 忉利天 1 天年 = 人間 36,500 年 (人間百年為一日夜)
-        antarakalpa: 16798000 * 365.25 * 86400, // 1 中劫 / 小劫 ≈ 1679.8 萬地球年 (增減劫)
-        mahakalpa: 1343840000 * 365.25 * 86400, // 1 大劫 = 80 中劫 ≈ 13.44 億地球年
+        ksana: 0.013333,
+        tatksana: 1.6 / 60,
+        lava: 1.6,
+        muhurta: 96,
+        heavenYear: 365.25 * 86400 * 36500,
+        antarakalpa: 16798000 * 365.25 * 86400,
+        mahakalpa: 1343840000 * 365.25 * 86400,
       };
 
       function calculateTime() {
@@ -2778,13 +2805,11 @@
         }
       }
 
-      // 監聽輸入變化
       distInputEl.addEventListener("input", calculateDistance);
       distUnitEl.addEventListener("change", calculateDistance);
       timeInputEl.addEventListener("input", calculateTime);
       timeUnitEl.addEventListener("change", calculateTime);
 
-      // 初始化計算
       calculateDistance();
       calculateTime();
     </script>
