@@ -2258,6 +2258,94 @@
         },
       ];
 
+      // 繪製九山八海同心圓 SVG 階梯圖形
+      function renderNineMountainsSvg() {
+        const diagramBox = document.getElementById("diagram-box");
+        if (!diagramBox) return;
+
+        diagramBox.style.display = "flex";
+        diagramBox.innerHTML = `
+          <div style="font-size: 13px; color: #f1c40f; margin-bottom: 8px; font-weight: bold;">
+            ✦ 九山八海同心階梯俯瞰圖 ✦
+          </div>
+          <svg width="320" height="320" viewBox="-160 -160 320 320" style="max-width: 100%;">
+            <defs>
+              <radialGradient id="sumeruCenterGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#ffffff" />
+                <stop offset="50%" stop-color="#f1c40f" />
+                <stop offset="100%" stop-color="#d4af37" />
+              </radialGradient>
+            </defs>
+            <!-- 8. 大鹹水海 (外洋) -->
+            <circle class="ring-path" cx="0" cy="0" r="148" fill="#0d1b2a" stroke="#1b263b" stroke-width="1.5" data-name="第八・大鹹水海" />
+            <!-- 鐵圍山 (外圍金剛輪) -->
+            <circle class="ring-path" cx="0" cy="0" r="142" fill="none" stroke="#415a77" stroke-width="3" data-name="大鐵圍山" />
+
+            <!-- 七金山與七香水海 (由外向內交替) -->
+            <!-- 7. 持地山 & 第七香水海 -->
+            <circle class="ring-path" cx="0" cy="0" r="126" fill="#132a40" stroke="#8b5a2b" stroke-width="1" data-name="第七・香水海" />
+            <circle class="ring-path" cx="0" cy="0" r="120" fill="none" stroke="#d4af37" stroke-width="2" data-name="第七・持地山" />
+
+            <!-- 6. 障礙山 & 第六香水海 -->
+            <circle class="ring-path" cx="0" cy="0" r="108" fill="#1e3d59" stroke="#8b5a2b" stroke-width="1" data-name="第六・香水海" />
+            <circle class="ring-path" cx="0" cy="0" r="102" fill="none" stroke="#d4af37" stroke-width="2" data-name="第六・障礙山" />
+
+            <!-- 5. 馬耳山 & 第五香水海 -->
+            <circle class="ring-path" cx="0" cy="0" r="90" fill="#132a40" stroke="#8b5a2b" stroke-width="1" data-name="第五・香水海" />
+            <circle class="ring-path" cx="0" cy="0" r="84" fill="none" stroke="#d4af37" stroke-width="2.5" data-name="第五・馬耳山" />
+
+            <!-- 4. 善見山 & 第四香水海 -->
+            <circle class="ring-path" cx="0" cy="0" r="72" fill="#1e3d59" stroke="#8b5a2b" stroke-width="1" data-name="第四・香水海" />
+            <circle class="ring-path" cx="0" cy="0" r="66" fill="none" stroke="#d4af37" stroke-width="2.5" data-name="第四・善見山" />
+
+            <!-- 3. 擔木山 & 第三香水海 -->
+            <circle class="ring-path" cx="0" cy="0" r="54" fill="#132a40" stroke="#8b5a2b" stroke-width="1" data-name="第三・香水海" />
+            <circle class="ring-path" cx="0" cy="0" r="48" fill="none" stroke="#d4af37" stroke-width="3" data-name="第三・擔木山" />
+
+            <!-- 2. 持軸山 & 第二香水海 -->
+            <circle class="ring-path" cx="0" cy="0" r="38" fill="#1e3d59" stroke="#8b5a2b" stroke-width="1" data-name="第二・香水海" />
+            <circle class="ring-path" cx="0" cy="0" r="32" fill="none" stroke="#d4af37" stroke-width="3" data-name="第二・持軸山" />
+
+            <!-- 1. 雙鳩山 & 第一香水海 -->
+            <circle class="ring-path" cx="0" cy="0" r="24" fill="#0077b6" stroke="#8b5a2b" stroke-width="1" data-name="第一・香水海" />
+            <circle class="ring-path" cx="0" cy="0" r="18" fill="none" stroke="#f1c40f" stroke-width="3.5" data-name="第一・雙鳩山" />
+
+            <!-- 須彌山中心主峰 -->
+            <circle class="ring-path" cx="0" cy="0" r="10" fill="url(#sumeruCenterGlow)" data-name="須彌山 (妙高山)" />
+          </svg>
+          <div id="diagram-hint" style="font-size: 11px; color: #bfa588; margin-top: 6px; text-align: center;">
+            (懸停或點擊同心圓環可檢視山海細節)
+          </div>
+        `;
+
+        // 綁定同心圓互動提示
+        const rings = diagramBox.querySelectorAll(".ring-path");
+        const hintEl = document.getElementById("diagram-hint");
+        rings.forEach((ring) => {
+          ring.addEventListener("mouseenter", () => {
+            const name = ring.getAttribute("data-name");
+            const item = nineMountainsEightSeasData.find(
+              (d) =>
+                d.name.includes(name) || name.includes(d.name.split(" ")[0]),
+            );
+            if (item && hintEl) {
+              hintEl.innerHTML = `<span style="color:#f1c40f;font-weight:bold;">${item.name}</span> (${item.height || item.width})<br>${item.desc}`;
+            }
+          });
+          ring.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const name = ring.getAttribute("data-name");
+            const item = nineMountainsEightSeasData.find(
+              (d) =>
+                d.name.includes(name) || name.includes(d.name.split(" ")[0]),
+            );
+            if (item && hintEl) {
+              hintEl.innerHTML = `<span style="color:#f1c40f;font-weight:bold;">${item.name}</span> (${item.height || item.width})<br>${item.desc}`;
+            }
+          });
+        });
+      }
+
       function toggleInfoPanel(node) {
         const tabContainer = document.getElementById("continent-tab-container");
         const diagramBox = document.getElementById("diagram-box");
@@ -2401,6 +2489,9 @@
                 .querySelectorAll(".continent-tab-btn")
                 .forEach((b) => b.classList.remove("active-tab"));
               seaBtn.classList.add("active-tab");
+
+              // 呼叫繪製同心圓圖形
+              renderNineMountainsSvg();
 
               titleEl.textContent = "九山八海・七金山";
               subTitleEl.textContent =
