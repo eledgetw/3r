@@ -692,9 +692,10 @@
         color: #d4af37;
         box-sizing: border-box;
         padding: 50px 20px 60px 20px;
+        user-select: none;
         transition:
-          opacity 1s ease,
-          visibility 1s ease;
+          opacity 0.5s ease,
+          visibility 0.5s ease;
       }
       #splash-screen::before {
         content: "";
@@ -710,12 +711,13 @@
         z-index: 1;
       }
       #splash-screen.hidden {
-        opacity: 0;
-        visibility: hidden;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
       }
       .splash-header {
         position: relative;
-        z-index: 2;
+        z-index: 20;
         text-align: center;
         background: rgba(10, 8, 6, 0.65);
         padding: 16px 36px;
@@ -746,7 +748,11 @@
       }
       .splash-footer {
         position: relative;
-        z-index: 2;
+        z-index: 20;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        pointer-events: auto;
       }
       .enter-btn {
         margin: 0;
@@ -754,8 +760,8 @@
         font-size: 18px;
         background: linear-gradient(
           180deg,
-          rgba(45, 32, 22, 0.9) 0%,
-          rgba(20, 15, 10, 0.95) 100%
+          rgba(45, 32, 22, 0.95) 0%,
+          rgba(20, 15, 10, 0.98) 100%
         );
         color: #fce8a2;
         border: 1.5px solid #d4af37;
@@ -763,22 +769,29 @@
         cursor: pointer;
         letter-spacing: 6px;
         font-weight: bold;
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        display: inline-block;
+        pointer-events: auto;
+        position: relative;
+        z-index: 30;
+        outline: none;
+        transition:
+          background 0.2s ease,
+          border-color 0.2s ease,
+          transform 0.2s ease,
+          box-shadow 0.2s ease;
         box-shadow:
           0 6px 25px rgba(0, 0, 0, 0.8),
           0 0 15px rgba(212, 175, 55, 0.3);
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
       }
       .enter-btn:hover {
         background: linear-gradient(180deg, #8b5a2b 0%, #5c3b1c 100%);
         color: #ffffff;
         border-color: #f1c40f;
         box-shadow: 0 0 30px rgba(241, 196, 15, 0.85);
-        transform: translateY(-2px) scale(1.04);
+        transform: scale(1.04);
       }
       .enter-btn:active {
-        transform: translateY(1px) scale(0.98);
+        transform: scale(0.98);
       }
       @media (max-width: 768px) {
         #splash-screen {
@@ -805,7 +818,13 @@
         <p class="splash-subtitle">互動畫布</p>
       </div>
       <div class="splash-footer">
-        <button class="enter-btn" onclick="enterExperience()">進入探索</button>
+        <button
+          class="enter-btn"
+          type="button"
+          onclick="enterExperience(event)"
+        >
+          進入探索
+        </button>
       </div>
       <audio id="enter-sound" src="./enter.mp3" preload="auto"></audio>
     </div>
