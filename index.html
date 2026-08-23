@@ -43,9 +43,8 @@
         transform-origin: 0 0;
       }
 
-      /* 【終極背景修復】
-         將寬度向左右各擴張 4000px (總寬 12000px)，高度涵蓋整整 20000px。
-         徹底覆蓋所有的左右邊界與上下視野，再也不會有 T 字形切邊與遮罩黑塊！ */
+      /* 【終極背景修復 - 邊界柔化羽化版】
+         加入雙向遮罩漸層 mask-image，使背景版四周向外自然虛化淡出，消除縮小時的所有長方形硬邊切痕 */
       #canvas::before {
         content: "";
         position: absolute;
@@ -67,6 +66,18 @@
           #241414 12400px,
           #140808 16000px,
           #140808 20000px
+        );
+        -webkit-mask-image: radial-gradient(
+          ellipse 48% 46% at 50% 50%,
+          rgba(0, 0, 0, 1) 40%,
+          rgba(0, 0, 0, 0.8) 65%,
+          rgba(0, 0, 0, 0) 95%
+        );
+        mask-image: radial-gradient(
+          ellipse 48% 46% at 50% 50%,
+          rgba(0, 0, 0, 1) 40%,
+          rgba(0, 0, 0, 0.8) 65%,
+          rgba(0, 0, 0, 0) 95%
         );
       }
 
@@ -154,26 +165,32 @@
         filter: contrast(180%) brightness(75%);
       }
 
-      /* 古典泥金標籤牌 */
+      /* 純文字標籤樣式 (無底色、無邊框、字體放大1倍) */
       .node-label-box {
-        margin-top: 10px;
-        background: rgba(20, 15, 10, 0.75);
-        border: 1px solid #d4af37;
-        padding: 6px 18px;
-        border-radius: 4px;
+        margin-top: 16px;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
         text-align: center;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        box-shadow: none !important;
       }
       .node-title {
-        font-size: 22px;
+        font-size: 44px;
         font-weight: bold;
-        color: #f5d77f;
-        letter-spacing: 2px;
+        color: #fce8a2;
+        letter-spacing: 4px;
+        text-shadow:
+          0 2px 8px rgba(0, 0, 0, 0.9),
+          0 0 20px rgba(0, 0, 0, 0.8);
       }
       .node-desc {
-        font-size: 14px;
-        color: #c97a7e;
-        margin-top: 3px;
+        font-size: 28px;
+        color: #e5a9a9;
+        margin-top: 6px;
+        letter-spacing: 2px;
+        text-shadow:
+          0 2px 6px rgba(0, 0, 0, 0.9),
+          0 0 15px rgba(0, 0, 0, 0.8);
       }
 
       /* 行動裝置/平板專屬：選單展開/收合開關按鈕 */
@@ -461,13 +478,13 @@
         pointer-events: none !important;
       }
 
-      /* 三千大千世界矩陣 (一微塵中見大千) 樣式與旋轉動畫 */
+      /* 三千大千世界矩陣 (30000px 巨型旋轉層，幾何中心精準鎖定 X:2000, Y:5900) */
       #macro-cosmos-layer {
         position: absolute;
-        top: -12000px;
-        left: -12000px;
-        width: 28000px;
-        height: 36000px;
+        top: -9100px;
+        left: -13000px;
+        width: 30000px;
+        height: 30000px;
         pointer-events: none;
         opacity: 0;
         transition: opacity 0.8s ease;
@@ -983,20 +1000,10 @@
     <!-- 大千世界縮放提示浮標 -->
     <div id="macro-cosmos-hint">✦ 一微塵中見大千・三千大千世界 ✦</div>
 
-    <!-- 右下角視角控制鈕：回到預設須彌山主視角 -->
+    <!-- 右下角視角控制鈕：回到預設須彌山主視角 (僅保留圖示) -->
     <div id="view-controls">
-      <div
-        class="ctrl-btn"
-        onclick="resetView()"
-        title="回到須彌山預設視角"
-        style="
-          width: auto;
-          padding: 0 14px;
-          font-size: 14px;
-          letter-spacing: 1px;
-        "
-      >
-        🏔 須彌山
+      <div class="ctrl-btn" onclick="resetView()" title="回到須彌山預設視角">
+        🏔
       </div>
     </div>
 
@@ -1146,13 +1153,13 @@
        * 1. 完整宇宙觀 JSON 結構
        */
       const cosmologyData = [
-        // --- 1. 出三界 聖者法界 (頂層) ---
+        // --- 1. 出三界 聖者法界 (頂層・等距向上平移 200px) ---
         {
           id: "pure-land",
           title: "四聖法界・四種淨土",
           category: "transcendence",
           isHotspot: false,
-          layout: { x: 950, y: -1350, width: 2100, height: 975 },
+          layout: { x: 950, y: -1550, width: 2100, height: 975 },
           visuals: {
             videoSrc: "./pure_land.mp4",
             imgSrc: "./pure_land.png",
@@ -1212,13 +1219,13 @@
           ],
         },
 
-        // --- 2. 無色界四空天 ---
+        // --- 2. 無色界四空天 (等距向上平移 200px) ---
         {
           id: "formless-realm",
           title: "無色界四空天",
           category: "formless",
           isHotspot: false,
-          layout: { x: 1325, y: -225, width: 1350, height: 825 },
+          layout: { x: 1325, y: -425, width: 1350, height: 825 },
           visuals: {
             videoSrc: "./formless_realm.mp4",
             imgSrc: "./formless_realm.png",
@@ -1232,13 +1239,13 @@
           },
         },
 
-        // --- 3. 色界十八天 (禪天) ---
+        // --- 3. 色界十八天 (禪天・等距向上平移 200px) ---
         {
           id: "form-realm",
           title: "色界十八天 (初禪至四禪)",
           category: "form",
           isHotspot: false,
-          layout: { x: 1025, y: 750, width: 1950, height: 1050 },
+          layout: { x: 1025, y: 550, width: 1950, height: 1050 },
           visuals: {
             videoSrc: "./form_realm.mp4",
             imgSrc: "./form_realm.png",
@@ -1276,13 +1283,13 @@
           ],
         },
 
-        // --- 4. 欲界第六天：他化自在天 ---
+        // --- 4. 欲界第六天：他化自在天 (拉開視覺間距・向上平移 200px) ---
         {
           id: "paranirmita",
           title: "他化自在天",
           category: "desire-sky",
           isHotspot: false,
-          layout: { x: 928, y: 1950, width: 2145, height: 878 },
+          layout: { x: 928, y: 1750, width: 2145, height: 878 },
           visuals: {
             videoSrc: "./paranirmita_palace.mp4",
             imgSrc: "./paranirmita_palace.png",
@@ -1601,11 +1608,11 @@
         nav.classList.toggle("open");
       }
 
-      // 祥雲過渡層資料
+      // 祥雲過渡層資料 (頂部三層雲同步上移 200px)
       const cloudLayers = [
-        { y: -300, opacity: 0.35, scale: 1.2 },
-        { y: 675, opacity: 0.45, scale: 1.4 },
-        { y: 1875, opacity: 0.5, scale: 1.3 },
+        { y: -500, opacity: 0.35, scale: 1.2 },
+        { y: 475, opacity: 0.45, scale: 1.4 },
+        { y: 1675, opacity: 0.5, scale: 1.3 },
         { y: 2450, opacity: 0.55, scale: 1.3 },
         { y: 3400, opacity: 0.6, scale: 1.4 },
         { y: 4250, opacity: 0.65, scale: 1.5 },
