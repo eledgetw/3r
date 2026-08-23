@@ -675,40 +675,25 @@
     <style>
       #splash-screen {
         position: fixed;
-        top: 0;
-        left: 0;
+        inset: 0;
         width: 100vw;
         height: 100vh;
-        background-color: #060411;
-        background-image: url("./cover.png");
-        background-repeat: no-repeat;
-        background-position: center center;
-        background-size: cover;
-        z-index: 9999;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        align-items: center;
+        background:
+          radial-gradient(
+            circle at 50% 50%,
+            rgba(6, 4, 17, 0.15) 0%,
+            rgba(6, 4, 17, 0.7) 80%,
+            rgba(6, 4, 17, 0.95) 100%
+          ),
+          url("./cover.png") no-repeat center center / cover #060411;
+        z-index: 99999;
+        display: block;
         color: #d4af37;
         box-sizing: border-box;
-        padding: 50px 20px 60px 20px;
         user-select: none;
         transition:
-          opacity 0.5s ease,
-          visibility 0.5s ease;
-      }
-      #splash-screen::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: radial-gradient(
-          circle at 50% 50%,
-          rgba(6, 4, 17, 0.2) 0%,
-          rgba(6, 4, 17, 0.75) 85%,
-          rgba(6, 4, 17, 0.95) 100%
-        );
-        pointer-events: none;
-        z-index: 1;
+          opacity 0.4s ease,
+          visibility 0.4s ease;
       }
       #splash-screen.hidden {
         opacity: 0 !important;
@@ -716,10 +701,12 @@
         pointer-events: none !important;
       }
       .splash-header {
-        position: relative;
-        z-index: 20;
+        position: absolute;
+        top: 50px;
+        left: 50%;
+        transform: translateX(-50%);
         text-align: center;
-        background: rgba(10, 8, 6, 0.65);
+        background: rgba(10, 8, 6, 0.7);
         padding: 16px 36px;
         border-radius: 8px;
         border: 1px solid rgba(212, 175, 55, 0.4);
@@ -728,6 +715,7 @@
         box-shadow:
           0 10px 30px rgba(0, 0, 0, 0.8),
           inset 0 0 15px rgba(212, 175, 55, 0.15);
+        pointer-events: none;
       }
       .splash-title {
         margin: 0;
@@ -747,12 +735,11 @@
         font-weight: 500;
       }
       .splash-footer {
-        position: relative;
-        z-index: 20;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        pointer-events: auto;
+        position: absolute;
+        bottom: 60px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: block;
       }
       .enter-btn {
         margin: 0;
@@ -769,16 +756,13 @@
         cursor: pointer;
         letter-spacing: 6px;
         font-weight: bold;
-        display: inline-block;
-        pointer-events: auto;
-        position: relative;
-        z-index: 30;
+        display: block;
         outline: none;
         transition:
-          background 0.2s ease,
-          border-color 0.2s ease,
-          transform 0.2s ease,
-          box-shadow 0.2s ease;
+          background 0.15s ease,
+          border-color 0.15s ease,
+          transform 0.15s ease,
+          box-shadow 0.15s ease;
         box-shadow:
           0 6px 25px rgba(0, 0, 0, 0.8),
           0 0 15px rgba(212, 175, 55, 0.3);
@@ -794,16 +778,20 @@
         transform: scale(0.98);
       }
       @media (max-width: 768px) {
-        #splash-screen {
-          padding: 40px 15px 50px 15px;
+        .splash-header {
+          top: 35px;
+          padding: 12px 24px;
         }
         .splash-title {
-          font-size: 28px;
+          font-size: 26px;
           letter-spacing: 8px;
         }
         .splash-subtitle {
           font-size: 13px;
           letter-spacing: 4px;
+        }
+        .splash-footer {
+          bottom: 45px;
         }
         .enter-btn {
           padding: 12px 35px;
@@ -820,6 +808,7 @@
       <div class="splash-footer">
         <button
           class="enter-btn"
+          id="main-enter-btn"
           type="button"
           onclick="enterExperience(event)"
         >
