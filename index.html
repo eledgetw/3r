@@ -1,0 +1,2792 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>佛教宇宙觀 - 互動畫布</title>
+    <style>
+      /* 基礎重置與全螢幕設定 */
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden; /* 隱藏原生捲軸，由 JS 接管 */
+        background-color: #060411; /* 與頂層法界背景完全同色，消除縮小時的所有色塊硬切 */
+        /* 全面改為現代、清晰的無襯線字體 (Sans-serif) */
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, "Microsoft JhengHei", "PingFang TC",
+          sans-serif;
+      }
+
+      /* 視窗容器 */
+      #viewport {
+        width: 100vw;
+        height: 100vh;
+        position: relative;
+        cursor: grab;
+      }
+      #viewport:active {
+        cursor: grabbing;
+      }
+
+      /* 實際的畫布容器 */
+      #canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4000px;
+        height: 12000px;
+        transform-origin: 0 0;
+      }
+
+      /* 【終極背景修復】
+         將寬度向左右各擴張 4000px (總寬 12000px)，高度涵蓋整整 20000px。
+         徹底覆蓋所有的左右邊界與上下視野，再也不會有 T 字形切邊與遮罩黑塊！ */
+      #canvas::before {
+        content: "";
+        position: absolute;
+        top: -4000px;
+        left: -4000px;
+        width: 12000px;
+        height: 20000px;
+        z-index: -10;
+        background: linear-gradient(
+          to bottom,
+          #060411 0px,
+          #060411 4000px,
+          #0b0820 4800px,
+          #0b132b 5600px,
+          #132a40 6400px,
+          #1e3d59 7600px,
+          #2c3e35 9200px,
+          #2a221b 10800px,
+          #241414 12400px,
+          #140808 16000px,
+          #140808 20000px
+        );
+      }
+
+      /* 須彌山中央主體影片容器 (支援 MP4 循環播放與黑底透明去背) */
+      #sumeru-mountain {
+        position: absolute;
+        left: 1250px;
+        top: 5150px;
+        width: 1500px;
+        height: 2100px;
+        pointer-events: none;
+        object-fit: fill;
+        mix-blend-mode: screen;
+        -webkit-mask-image: radial-gradient(
+          ellipse at 50% 50%,
+          rgba(0, 0, 0, 1) 70%,
+          rgba(0, 0, 0, 0) 100%
+        );
+        mask-image: radial-gradient(
+          ellipse at 50% 50%,
+          rgba(0, 0, 0, 1) 70%,
+          rgba(0, 0, 0, 0) 100%
+        );
+        opacity: 0.95;
+      }
+
+      /* 左側導覽列：當前視窗居中節點之高亮光暈樣式 */
+      .nav-item.active-node {
+        background: #8b5a2b !important;
+        color: #ffffff !important;
+        border-color: #f1c40f !important;
+        box-shadow: 0 0 12px rgba(241, 196, 15, 0.65);
+        font-weight: bold;
+        padding-left: 14px !important;
+      }
+
+      /* 節點通用樣式：容器本身穿透點擊，不觸發手指游標 */
+      .node {
+        position: absolute;
+        border: none;
+        background: transparent;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        pointer-events: none; /* 外層透明大框不阻擋滑鼠 */
+        isolation: auto !important; /* 確保子元素的 mix-blend-mode 能直接穿透到底層 Canvas 背景 */
+      }
+
+      /* 懸浮透明物件渲染：實體圖片與 MP4 影片容器 */
+      .node-img,
+      .node-video {
+        width: 100%;
+        height: 75%;
+        object-fit: contain;
+        pointer-events: auto; /* 只有移到物件上方才感應 */
+        cursor: pointer;
+        transition:
+          transform 0.3s ease,
+          filter 0.3s ease;
+        border-radius: 6px;
+      }
+
+      .node-img {
+        filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.45));
+      }
+
+      /* 【關鍵修復二】：加入 opacity 強制解除影片硬體隔離，並用 filter 壓平壓縮噪點！ */
+      .node-video {
+        mix-blend-mode: screen !important;
+        background-color: transparent !important;
+        /* 須彌山會成功就是因為有加 opacity！給它加上 0.98，迫使瀏覽器正確與背景混合 */
+        opacity: 0.98 !important;
+        /* 壓平 MP4 壓縮後暗部的灰黑噪點，確保完全透明無黑框 */
+        filter: contrast(180%) brightness(75%);
+      }
+
+      .node-img:hover {
+        transform: scale(1.05);
+        filter: drop-shadow(0 0 25px rgba(212, 175, 55, 0.8));
+      }
+
+      .node-video:hover {
+        transform: scale(1.05);
+        /* 懸浮時保持壓暗濾鏡，避免懸浮瞬間黑框閃現 */
+        filter: contrast(180%) brightness(75%);
+      }
+
+      /* 古典泥金標籤牌 */
+      .node-label-box {
+        margin-top: 10px;
+        background: rgba(20, 15, 10, 0.75);
+        border: 1px solid #d4af37;
+        padding: 6px 18px;
+        border-radius: 4px;
+        text-align: center;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+      }
+      .node-title {
+        font-size: 22px;
+        font-weight: bold;
+        color: #f5d77f;
+        letter-spacing: 2px;
+      }
+      .node-desc {
+        font-size: 14px;
+        color: #c97a7e;
+        margin-top: 3px;
+      }
+
+      /* 左上方古典層級導覽樹 (三界與六道從屬關係) */
+      #quick-nav {
+        position: fixed;
+        left: 20px;
+        top: 20px;
+        width: 250px;
+        max-height: 90vh;
+        overflow-y: auto;
+        background: rgba(18, 13, 10, 0.92);
+        border: 1px solid #8b5a2b;
+        border-radius: 6px;
+        padding: 12px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        z-index: 100;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
+      }
+      .nav-title {
+        color: #d4af37;
+        font-size: 15px;
+        font-weight: bold;
+        border-bottom: 1px solid #5c4033;
+        padding-bottom: 6px;
+        text-align: center;
+        letter-spacing: 3px;
+        margin-bottom: 4px;
+      }
+      /* 第一級：三界/出三界大分類標題 */
+      .nav-group-header {
+        font-size: 12px;
+        font-weight: bold;
+        padding: 4px 6px;
+        margin-top: 4px;
+        border-radius: 2px;
+        letter-spacing: 1px;
+      }
+      .header-holy {
+        color: #f1c40f;
+        background: rgba(212, 175, 55, 0.15);
+      }
+      .header-formless {
+        color: #8ec5fc;
+        background: rgba(142, 197, 252, 0.1);
+      }
+      .header-form {
+        color: #a1c4fd;
+        background: rgba(161, 196, 253, 0.1);
+      }
+      .header-desire {
+        color: #e59866;
+        background: rgba(229, 152, 102, 0.15);
+      }
+
+      /* 第二級：子分類標籤 (如：欲界內的天道、地居天、下五道) */
+      .nav-sub-header {
+        font-size: 11px;
+        color: #bfa588;
+        padding-left: 10px;
+        margin-top: 2px;
+        border-left: 2px solid #5c4033;
+      }
+
+      /* 可點擊的跳轉節點按鈕 */
+      .nav-item {
+        background: rgba(35, 25, 20, 0.5);
+        color: #e0d8c8;
+        border: 1px solid #4a3528;
+        padding: 5px 8px;
+        font-size: 12px;
+        cursor: pointer;
+        border-radius: 3px;
+        text-align: left;
+        transition: all 0.2s ease;
+      }
+      .nav-item.level-1 {
+        margin-left: 6px;
+      }
+      .nav-item.level-2 {
+        margin-left: 14px;
+      }
+      .nav-item:hover {
+        background: #8b5a2b;
+        color: #ffffff;
+        border-color: #d4af37;
+        padding-left: 12px;
+      }
+
+      /* 古典風格的資訊側邊欄 (加入垂直捲軸支援與平滑滾動) */
+      #info-panel {
+        position: fixed;
+        right: -400px; /* 寬度加寬到 400px */
+        top: 0;
+        width: 400px;
+        height: 100%;
+        overflow-y: auto; /* 內容超出畫面時自動產生垂直捲軸 */
+        /* 仿古深色絲綢/墨色質感 */
+        background-color: #1a1512;
+        /* 傳統的赭石色邊框 */
+        border-left: 3px solid #8b5a2b;
+        color: #e0d8c8; /* 仿古宣紙文字色 */
+        padding: 40px;
+        box-sizing: border-box;
+        transition: right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.8);
+        z-index: 1000;
+        /* 加入宣紙紋理的 CSS 漸層雜訊 */
+        background-image: radial-gradient(
+          rgba(255, 255, 255, 0.03) 1px,
+          transparent 1px
+        );
+        background-size: 4px 4px;
+      }
+
+      /* 四大部洲子標籤切換列 */
+      .continent-tabs {
+        display: flex;
+        gap: 6px;
+        margin: 15px 0 10px 0;
+        flex-wrap: wrap;
+      }
+      .continent-tab-btn {
+        background: rgba(35, 25, 20, 0.6);
+        border: 1px solid #8b5a2b;
+        color: #e0d8c8;
+        padding: 6px 10px;
+        font-size: 13px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        flex: 1 1 calc(50% - 6px);
+        text-align: center;
+      }
+      .continent-tab-btn:hover,
+      .continent-tab-btn.active-tab {
+        background: #8b5a2b;
+        color: #ffffff;
+        border-color: #f1c40f;
+        box-shadow: 0 0 8px rgba(241, 196, 15, 0.4);
+      }
+
+      /* 九山八海 SVG 同心圓與互動圖形樣式 */
+      #diagram-box {
+        margin: 15px 0 10px 0;
+        background: rgba(10, 8, 5, 0.7);
+        border: 1px solid #5c4033;
+        border-radius: 4px;
+        padding: 10px;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      .ring-path {
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+      .ring-path:hover {
+        filter: brightness(1.6) drop-shadow(0 0 5px #f1c40f);
+      }
+
+      /* 《俱舍論》古典計量單位轉換器樣式 */
+      #unit-converter-box {
+        margin-top: 15px;
+        background: rgba(12, 9, 6, 0.75);
+        border: 1px solid #8b5a2b;
+        border-radius: 4px;
+        padding: 12px;
+      }
+      .converter-title {
+        font-size: 13px;
+        color: #d4af37;
+        font-weight: bold;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+        border-bottom: 1px dashed #5c4033;
+        padding-bottom: 4px;
+      }
+      .converter-row {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+      .converter-input {
+        background: rgba(0, 0, 0, 0.6);
+        border: 1px solid #8b5a2b;
+        color: #f5d77f;
+        padding: 5px 8px;
+        border-radius: 3px;
+        font-size: 13px;
+        width: 70px;
+        outline: none;
+      }
+      .converter-select {
+        background: rgba(25, 18, 14, 0.9);
+        border: 1px solid #8b5a2b;
+        color: #e0d8c8;
+        padding: 5px 6px;
+        border-radius: 3px;
+        font-size: 12px;
+        outline: none;
+        flex: 1;
+      }
+      .converter-result {
+        background: rgba(0, 0, 0, 0.4);
+        border-left: 2px solid #f1c40f;
+        padding: 6px 10px;
+        font-size: 12px;
+        color: #e0d8c8;
+        line-height: 1.6;
+        border-radius: 0 3px 3px 0;
+      }
+
+      /* 節點與須彌山漸變過渡支援 */
+      .node,
+      #sumeru-mountain,
+      .cloud-layer {
+        transition:
+          opacity 0.6s ease,
+          filter 0.6s ease;
+      }
+
+      /* 漸變過渡支援 */
+      #canvas::before {
+        transition: opacity 0.8s ease;
+      }
+
+      /* 進入大千世界模式時：隱藏原本的三界所有節點、祥雲、須彌山主體，並完全隱藏矩形漸層背景版 */
+      #canvas.macro-mode .node,
+      #canvas.macro-mode #sumeru-mountain,
+      #canvas.macro-mode .cloud-layer,
+      #canvas.macro-mode::before {
+        opacity: 0 !important;
+        pointer-events: none !important;
+      }
+
+      /* 三千大千世界矩陣 (一微塵中見大千) 樣式與旋轉動畫 */
+      #macro-cosmos-layer {
+        position: absolute;
+        top: -12000px;
+        left: -12000px;
+        width: 28000px;
+        height: 36000px;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.8s ease;
+        z-index: 60;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      @keyframes cosmosRotate {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .cosmos-matrix-svg {
+        animation: cosmosRotate 120s linear infinite;
+      }
+      #macro-cosmos-hint {
+        position: fixed;
+        bottom: 75px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(18, 13, 10, 0.9);
+        border: 1px solid #d4af37;
+        color: #f1c40f;
+        padding: 8px 22px;
+        border-radius: 20px;
+        font-size: 14px;
+        letter-spacing: 2px;
+        font-weight: bold;
+        pointer-events: auto;
+        cursor: pointer;
+        opacity: 0;
+        transition:
+          opacity 0.6s ease,
+          transform 0.2s ease,
+          background 0.2s ease;
+        box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+        z-index: 10000;
+        user-select: none;
+      }
+      #macro-cosmos-hint:hover {
+        background: #8b5a2b;
+        color: #ffffff;
+        transform: translateX(-50%) scale(1.05);
+        box-shadow: 0 0 25px rgba(241, 196, 15, 0.8);
+      }
+
+      /* 側邊欄專屬古典泥金捲軸樣式 */
+      #info-panel::-webkit-scrollbar {
+        width: 6px;
+      }
+      #info-panel::-webkit-scrollbar-track {
+        background: rgba(10, 5, 0, 0.4);
+      }
+      #info-panel::-webkit-scrollbar-thumb {
+        background: #5c4033;
+        border-radius: 3px;
+      }
+      #info-panel::-webkit-scrollbar-thumb:hover {
+        background: #8b5a2b;
+      }
+
+      #info-panel.active {
+        right: 0;
+      }
+
+      #close-panel {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        cursor: pointer;
+        font-size: 20px;
+        color: #aaa;
+      }
+      #close-panel:hover {
+        color: white;
+      }
+
+      /* 現代水平頂部標題排版，徹底解決直書文字過長換行擠壓內容的問題 */
+      #panel-title {
+        writing-mode: horizontal-tb;
+        font-size: 26px;
+        color: #d4af37; /* 泥金色 */
+        letter-spacing: 2px;
+        float: none;
+        margin-left: 0;
+        margin-top: 0;
+        margin-bottom: 8px;
+        border-left: none;
+        padding-left: 0;
+        padding-right: 25px; /* 避開右上角關閉按鈕 */
+        line-height: 1.3;
+      }
+
+      #panel-subtitle {
+        color: #c97a7e; /* 硃砂淡紅 */
+        font-size: 15px;
+        margin-top: 0;
+        margin-bottom: 15px;
+        border-bottom: 1px dashed #4a3b32;
+        padding-bottom: 10px;
+        line-height: 1.4;
+      }
+
+      .panel-meta-box {
+        background: rgba(0, 0, 0, 0.35);
+        border: 1px solid rgba(212, 175, 55, 0.25);
+        border-radius: 4px;
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .meta-item {
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      .meta-label {
+        color: #d4af37;
+        font-weight: bold;
+      }
+      .meta-val {
+        color: #f0e6d2;
+      }
+
+      /* 山體內部的純標籤熱區 (完全透明無陰影，不遮擋須彌山主圖) */
+      .node.hotspot-node {
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+      }
+      .node.hotspot-node:hover {
+        background: transparent !important;
+        border: none !important;
+      }
+
+      /* 右下角視角控制器 */
+      #view-controls {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        z-index: 100;
+      }
+      .ctrl-btn {
+        width: 42px;
+        height: 42px;
+        background: rgba(20, 15, 12, 0.85);
+        border: 1px solid #8b5a2b;
+        color: #d4af37;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border-radius: 4px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        transition: all 0.2s ease;
+        user-select: none;
+      }
+      .ctrl-btn:hover {
+        background: #8b5a2b;
+        color: #fff;
+        border-color: #d4af37;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 入口畫面 (Splash Screen) -->
+    <style>
+      #splash-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: #0a0a1a;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: #d4af37;
+        transition:
+          opacity 1s ease,
+          visibility 1s ease;
+      }
+      #splash-screen.hidden {
+        opacity: 0;
+        visibility: hidden;
+      }
+      .enter-btn {
+        margin-top: 35px;
+        padding: 12px 35px;
+        font-size: 18px;
+        background: rgba(20, 15, 10, 0.75);
+        color: #f5d77f;
+        border: 1px solid #d4af37;
+        border-radius: 4px;
+        cursor: pointer;
+        letter-spacing: 4px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+      }
+      .enter-btn:hover {
+        background: #8b5a2b;
+        color: #ffffff;
+        box-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+        transform: scale(1.05);
+      }
+    </style>
+    <div id="splash-screen">
+      <h1 style="letter-spacing: 8px; margin-bottom: 10px; font-size: 42px">
+        佛教宇宙觀
+      </h1>
+      <p style="color: #c97a7e; letter-spacing: 4px; font-size: 18px">
+        互動畫布
+      </p>
+      <button class="enter-btn" onclick="enterExperience()">進入探索</button>
+      <!-- 若有自備的點擊音效，請將 src 換成你的音效檔路徑 -->
+      <audio id="enter-sound" src="./enter.mp3" preload="auto"></audio>
+    </div>
+
+    <!-- 快速導航導覽列 (點擊直接聯動展示右側面板) -->
+    <div id="quick-nav">
+      <div class="nav-title">三界六道總覽</div>
+
+      <!-- 出三界 -->
+      <div class="nav-group-header header-holy">✦ 出三界 (四聖法界)</div>
+      <div
+        class="nav-item level-1"
+        data-node-id="pure-land"
+        onclick="selectNodeById('pure-land')"
+      >
+        常寂光土・諸佛淨土
+      </div>
+
+      <!-- 三界之內 -->
+      <div class="nav-group-header header-formless">
+        壹、無色界 (天道・無實體)
+      </div>
+      <div
+        class="nav-item level-1"
+        data-node-id="formless-realm"
+        onclick="selectNodeById('formless-realm')"
+      >
+        無色界四空天 (非想等)
+      </div>
+
+      <div class="nav-group-header header-form">貳、色界 (天道・清淨禪天)</div>
+      <div
+        class="nav-item level-1"
+        data-node-id="form-realm"
+        onclick="selectNodeById('form-realm')"
+      >
+        初禪至四禪十八天
+      </div>
+
+      <div class="nav-group-header header-desire">
+        參、欲界 (六道眾生全居於此)
+      </div>
+
+      <!-- 欲界內的天道：六欲天 (六天全獨立) -->
+      <div class="nav-sub-header">↳ 天道 (欲界六天・由上至下)</div>
+      <div
+        class="nav-item level-2"
+        data-node-id="paranirmita"
+        onclick="selectNodeById('paranirmita')"
+      >
+        第六天・他化自在天 (空居)
+      </div>
+      <div
+        class="nav-item level-2"
+        data-node-id="nirmanarati"
+        onclick="selectNodeById('nirmanarati')"
+      >
+        第五天・化樂天 (空居)
+      </div>
+      <div
+        class="nav-item level-2"
+        data-node-id="tushita"
+        onclick="selectNodeById('tushita')"
+      >
+        第四天・兜率天 (知足天宮)
+      </div>
+      <div
+        class="nav-item level-2"
+        data-node-id="yama"
+        onclick="selectNodeById('yama')"
+      >
+        第三天・夜摩天 (善時天)
+      </div>
+      <div
+        class="nav-item level-2"
+        data-node-id="trayastrimsa"
+        onclick="selectNodeById('trayastrimsa')"
+      >
+        第二天・忉利天 (須彌山頂)
+      </div>
+      <div
+        class="nav-item level-2"
+        data-node-id="caturmaharaja"
+        onclick="selectNodeById('caturmaharaja')"
+      >
+        第一天・四大天王天 (山腰)
+      </div>
+
+      <!-- 欲界其餘五道 (全部獨立展開) -->
+      <div class="nav-sub-header">↳ 其餘五道</div>
+      <div
+        class="nav-item level-2"
+        data-node-id="human-realm"
+        onclick="selectNodeById('human-realm')"
+      >
+        人道 (四大部洲・世俗界)
+      </div>
+      <div
+        class="nav-item level-2"
+        data-node-id="asura-realm"
+        onclick="selectNodeById('asura-realm')"
+      >
+        阿修羅道 (大海戰場)
+      </div>
+      <div
+        class="nav-item level-2"
+        data-node-id="animal-realm"
+        onclick="selectNodeById('animal-realm')"
+      >
+        畜生道 (密林水族・傍生)
+      </div>
+      <div
+        class="nav-item level-2"
+        data-node-id="hungry-ghost-realm"
+        onclick="selectNodeById('hungry-ghost-realm')"
+      >
+        餓鬼道 (荒原幽冥・焰口)
+      </div>
+      <div
+        class="nav-item level-2"
+        data-node-id="hell-realm"
+        onclick="selectNodeById('hell-realm')"
+      >
+        地獄道 (八熱八寒・無間)
+      </div>
+    </div>
+
+    <div id="viewport">
+      <div id="canvas">
+        <!-- 三千大千世界矩陣旋轉層 (華藏世界海) -->
+        <div id="macro-cosmos-layer"></div>
+
+        <!-- 業因果報流轉光束 SVG 畫布 (座標同步畫布) -->
+        <svg
+          id="karma-svg"
+          style="
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4000px;
+            height: 12000px;
+            pointer-events: none;
+            z-index: 50;
+          "
+        ></svg>
+        <!-- 須彌山中軸視覺山體 MP4 (支援降級 poster 圖片) -->
+        <video
+          id="sumeru-mountain"
+          src="./sumeru.mp4"
+          poster="./sumeru.png"
+          loop
+          playsinline
+          muted
+          autoplay
+        ></video>
+        <!-- JS 將會在這裡渲染節點 -->
+      </div>
+    </div>
+
+    <!-- 大千世界縮放提示浮標 -->
+    <div id="macro-cosmos-hint">✦ 一微塵中見大千・三千大千世界 ✦</div>
+
+    <!-- 右下角視角控制鈕：回到預設須彌山主視角 -->
+    <div id="view-controls">
+      <div
+        class="ctrl-btn"
+        onclick="resetView()"
+        title="回到須彌山預設視角"
+        style="
+          width: auto;
+          padding: 0 14px;
+          font-size: 14px;
+          letter-spacing: 1px;
+        "
+      >
+        🏔 須彌山
+      </div>
+    </div>
+
+    <!-- 詳細資訊側邊欄 (多維度結構化) -->
+    <div id="info-panel">
+      <div id="close-panel">✕</div>
+      <h2 id="panel-title">名稱</h2>
+      <h4 id="panel-subtitle" style="color: #f1c40f">副標題</h4>
+
+      <div
+        id="continent-tab-container"
+        class="continent-tabs"
+        style="display: none"
+      ></div>
+
+      <div id="diagram-box"></div>
+
+      <div class="panel-meta-box">
+        <div class="meta-item">
+          <span class="meta-label">壽命長度：</span
+          ><span id="meta-lifespan" class="meta-val">--</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">情慾型態：</span
+          ><span id="meta-desire" class="meta-val">--</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">代表神祇/聖者：</span
+          ><span id="meta-deities" class="meta-val">--</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">輪迴解脫狀態：</span
+          ><span id="meta-status" class="meta-val">--</span>
+        </div>
+      </div>
+
+      <div style="border-top: 1px dashed #5c4033; margin: 15px 0"></div>
+      <p
+        id="panel-content"
+        style="
+          line-height: 1.85;
+          color: #d0c8b8;
+          font-size: 15px;
+          white-space: pre-line;
+        "
+      >
+        內容
+      </p>
+
+      <!-- 《俱舍論》計量單位轉換器 -->
+      <div id="unit-converter-box">
+        <div class="converter-title">✦ 《俱舍論》時空度量衡轉換器 ✦</div>
+
+        <!-- 長度 / 空間距離換算 -->
+        <div style="font-size: 12px; color: #bfa588; margin-bottom: 4px">
+          【空間度量衡換算】：
+        </div>
+        <div class="converter-row">
+          <input
+            type="number"
+            id="dist-input"
+            class="converter-input"
+            value="1"
+            min="0.001"
+            step="any"
+          />
+          <select id="dist-unit" class="converter-select">
+            <option value="yojana">由旬 (俱舍大由旬 11.2km)</option>
+            <option value="krosa">俱盧舍 (1/8 由旬 = 1.4km)</option>
+            <option value="dhanus">尋 / 弓 (4 肘 = 1.75m)</option>
+            <option value="hasta">肘 (24 指 = 43.75cm)</option>
+            <option value="anguli">指節 (7 麥 = 1.82cm)</option>
+          </select>
+        </div>
+        <div id="dist-result" class="converter-result">--</div>
+
+        <!-- 時間換算 -->
+        <div style="font-size: 12px; color: #bfa588; margin: 10px 0 4px 0">
+          【時間度量衡換算】：
+        </div>
+        <div class="converter-row">
+          <input
+            type="number"
+            id="time-input"
+            class="converter-input"
+            value="1"
+            min="0.001"
+            step="any"
+          />
+          <select id="time-unit" class="converter-select">
+            <option value="mahakalpa">大劫 (80 中劫 = 13.44億年)</option>
+            <option value="antarakalpa">
+              中劫 / 小劫 (一增一減 = 1680萬年)
+            </option>
+            <option value="heavenYear">
+              欲界天年 (以忉利天100人間年為一日)
+            </option>
+            <option value="muhurta">牟呼栗多 (30 臘縛 = 48分鐘)</option>
+            <option value="lava">臘縛 (60 怛剎那 = 1.6秒)</option>
+            <option value="tatksana">怛剎那 (120 剎那 = 0.0267秒)</option>
+            <option value="ksana">剎那 (一念 65 剎那 = 0.0133秒)</option>
+          </select>
+        </div>
+        <div id="time-result" class="converter-result">--</div>
+      </div>
+    </div>
+
+    <script>
+      /**
+       * 1. 完整宇宙觀 JSON 結構 (修復語法錯誤，夜摩天以上全平移，包含忉利天)
+       * 座標系參考：寬 4000, 高 12000，中心軸 X = 2000
+       */
+      const cosmologyData = [
+        // --- 1. 出三界 聖者法界 (頂層) --- 依統一 150px 間距對齊
+        {
+          id: "pure-land",
+          title: "四聖法界・四種淨土",
+          category: "transcendence",
+          isHotspot: false,
+          layout: { x: 950, y: -1350, width: 2100, height: 975 },
+          visuals: {
+            videoSrc: "./pure_land.mp4",
+            imgSrc: "./pure_land.png",
+            fallback:
+              "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1200&q=80",
+          },
+          details: {
+            subtitle: "天台宗十法界之四聖（聲聞・緣覺・菩薩・佛）與四大淨土",
+            description:
+              "三界之外超越分段生死與變易生死之聖者階位。天台宗依斷惑證真之深淺，將出三界聖境劃分為「四種淨土」（凡聖同居土、方便有餘土、實報莊嚴土、常寂光土），安立聲聞阿羅漢、辟支佛、大乘菩薩與無上佛陀四聖法界。請點選上方標籤切換檢視四大淨土與聖者解脫特質。",
+          },
+          pureLandDivisions: [
+            {
+              id: "tongju",
+              name: "一、凡聖同居土 (同居淨土)",
+              subtitle: "極樂世界等淨土・凡夫信願念佛與聖者同處",
+              lifespan: "隨願往生・壽命無量 (蓮華化生・皆得不退轉)",
+              desire: "永離三毒煩惱與惡道苦，唯受微妙法喜法樂",
+              deities: "往生凡夫、聲聞聖眾、觀世音菩薩、大勢至菩薩、阿彌陀佛",
+              status: "橫超三界・圓證三不退 (位不退、行不退、念不退)",
+              description:
+                "【法界特質與定位】：\n凡夫雖未斷盡見思煩惱，但憑藉深信切願與佛力加持（如西方極樂世界），得以帶業往生，與舍利弗、文殊、普賢等大聖者同聚一處。\n\n【代表聖者與解脫境界】：\n• 代表人物：念佛成就之凡夫求道者、普賢行願者。\n• 解脫特質：蓮花化生、遠離分段生死輪迴之苦，於無上菩提得永不退轉，直至成佛。",
+            },
+            {
+              id: "fangbian",
+              name: "二、方便有餘土 (變易淨土)",
+              subtitle: "修方便道斷見思惑・聲聞阿羅漢與緣覺辟支佛所居",
+              lifespan: "超越世間劫數・離分段生死・唯存微細變易生死",
+              desire: "斷盡見思二惑 (貪嗔癡慢疑)，安住偏真無漏涅槃",
+              deities: "大迦葉、舍利弗、目犍連、十二因緣獨覺聖者",
+              status: "出離三界・已證我空無漏・未破塵沙與無明惑",
+              description:
+                "【法界特質與定位】：\n二乘（聲聞、緣覺）聖者修四聖諦（苦集滅道）與十二因緣，斷盡三界見思煩惱，已脫分段生死；但因塵沙惑與無明惑未斷，尚有微細之變易生死（心念遷變之生滅），故稱「有餘」。\n\n【代表聖者與解脫境界】：\n• 聲聞法界：如大迦葉、舍利弗等千二百五十阿羅漢，證偏真涅槃。\n• 緣覺法界：觀十二因緣流轉而獨自覺悟之辟支佛。\n• 解脫特質：不受後有、所作已辦，但仍需迴小向大，發菩提心趣入大乘。",
+            },
+            {
+              id: "shibao",
+              name: "三、實報莊嚴土 (實報無障礙土)",
+              subtitle: "破無明顯法身・法身大士與十地菩薩所居",
+              lifespan: "法身無量無邊・任運示現十方微塵剎海",
+              desire: "分證法身真如・得大平等無礙慈悲智慧",
+              deities:
+                "文殊師利菩薩、普賢菩薩、地藏菩薩、彌勒菩薩、十地法身大士",
+              status: "斷塵沙惑・分破四十二品無明・分證究竟法身",
+              description:
+                "【法界特質與定位】：\n修六度萬行、行菩薩道之大乘行者，斷盡見思惑與塵沙惑，並分破一品乃至四十一品無明，感得如實果報所莊嚴之佛土，色心無礙、事事無礙。\n\n【代表聖者與解脫境界】：\n• 菩薩法界：文殊（大智）、普賢（大行）、觀音（大悲）、地藏（大願）等諸大菩薩與法雲地法身大士。\n• 解脫特質：具足十力、四無所畏，能分身十方無量世界救度苦難眾生，理事圓融無礙。",
+            },
+            {
+              id: "changjiguang",
+              name: "四、常寂光土 (究竟清淨法性土)",
+              subtitle: "斷盡四十二品無明・諸佛究竟圓滿法身所居",
+              lifespan: "真如本性・不生不滅・超越時空一切數量",
+              desire: "圓斷無明根本・萬德圓滿・無貪無欲・清淨寂照",
+              deities:
+                "清淨法身毘盧遮那佛、圓滿報身盧舍那佛、千百億化身釋迦牟尼佛",
+              status: "佛法界・究竟無上正等正覺 (阿耨多羅三藐三菩提)",
+              description:
+                "【法界特質與定位】：\n四惑俱盡（見思、塵沙、無明完全斷盡），真如法性徹底顯露之究竟佛果土。「常」即法身德（不生不滅）、「寂」即解脫德（遠離一切熱惱牽纏）、「光」即般若德（自性靈明照耀一切法界）。\n\n【代表聖者與解脫境界】：\n• 佛法界：十方三世一切諸佛之究竟極境。\n• 解脫特質：三身一體（法身、報身、化身），不住生死、不住涅槃，於十法界法爾如是常恆化導一切眾生。",
+            },
+          ],
+        },
+
+        // --- 2. 無色界四空天 --- 依統一 150px 間距對齊
+        {
+          id: "formless-realm",
+          title: "無色界四空天",
+          category: "formless",
+          isHotspot: false,
+          layout: { x: 1325, y: -225, width: 1350, height: 825 },
+          visuals: {
+            videoSrc: "./formless_realm.mp4",
+            imgSrc: "./formless_realm.png",
+            fallback:
+              "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=1000&q=80",
+          },
+          details: {
+            subtitle: "空無邊處・識無邊處・無所有處・非想非非想處 (有頂天)",
+            description:
+              "三界之頂，徹底厭離物質形骸，無色身、無宮殿方所，純粹唯微細心識安住於四空定境。由下而上分為四天：\n\n【空無邊處天（壽2萬大劫）】：厭離物質阻礙與色身繫縛，滅除一切色想，一心專注於無量無邊之廣袤虛空。\n【識無邊處天（壽4萬大劫）】：捨棄外在虛空相，轉而內觀能知能覺之主體，緣無量無邊的心識靈明而入定。\n【無所有處天（壽6萬大劫）】：進一步體會心識分別亦非究竟安穩，滅除對心識之執著，安住於內外空無少物可得之虛寂定境。\n【非想非非想處天（壽8萬大劫・有頂天）】：世間禪定之極限。捨無所有之粗想（非想），但仍存極微細潛在心識與俱生我執（非非想）。\n\n【警示】：無色界雖壽命極長，但僅是以世間有漏定力壓制煩惱，未發般若無漏空慧，我執與無明種子猶存。八萬大劫定盡之後必隨宿業墮落（甚至直墜三惡道），且因無法聞法修慧，被佛法列為「八難（長壽天難）」之一。",
+          },
+        },
+
+        // --- 3. 色界十八天 (禪天) --- 依統一 150px 間距對齊 (底部到 y: 1800，與他化自在天維持 150px 間距)
+        {
+          id: "form-realm",
+          title: "色界十八天 (初禪至四禪)",
+          category: "form",
+          isHotspot: false,
+          layout: { x: 1025, y: 750, width: 1950, height: 1050 },
+          visuals: {
+            videoSrc: "./form_realm.mp4",
+            imgSrc: "./form_realm.png",
+            fallback:
+              "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=1200&q=80",
+          },
+          details: {
+            subtitle: "初禪至四禪十八天 (含凡夫十三天與五不還天)",
+            description:
+              "徹底斷除男女欲染與粗重食睡之欲，具清淨微細色身與光明宮殿。色界分為凡夫所居之十三天，以及專屬三果聖者修證之五不還天（五淨居天），頂層為三界實體極頂「阿迦膩吒天（色究竟天）」。請點選上方標籤切換檢視。",
+          },
+          formDivisions: [
+            {
+              id: "common",
+              name: "色界凡夫天 (前十三天)",
+              subtitle: "初禪三天・二禪三天・三禪三天・四禪凡夫四天",
+              lifespan: "半劫 (初禪梵眾天) 至 500 大劫 (四禪廣果天/無想天)",
+              desire: "永斷男女形交與飲食欲，純受禪悅法喜與微細光明意樂",
+              deities: "初禪大梵天王、二禪光音天人、三禪遍淨天人、四禪廣果天人",
+              status: "凡夫有漏禪定極致・定力福盡仍退轉受生輪迴",
+              description:
+                "【初禪三天（離生喜樂）】：\n• 梵眾天（壽半劫）、梵輔天（壽一劫）、大梵天（壽一劫半）。斷除五欲，具有尋、伺、喜、樂、一心之定境。\n\n【二禪三天（定生喜樂）】：\n• 少光天（壽二大劫）、無量光天（壽四大劫）、光音天（壽八大劫）。息滅尋伺語言，以清淨光明傳達意念，定中湧生極大喜樂。\n\n【三禪三天（離喜妙樂）】：\n• 少淨天（壽十六大劫）、無量淨天（壽三十二大劫）、遍淨天（壽六十四大劫）。離亢奮之喜受，唯受世間最極致純粹之清淨妙樂。\n\n【四禪凡夫四天（捨念清淨）】：\n• 無雲天（壽125大劫）、福生天（壽250大劫）、廣果天（壽500大劫・凡夫福報極限）、無想天（外道修無想定所居）。斷盡呼吸與苦樂憂喜，心如止水。",
+            },
+            {
+              id: "holy",
+              name: "五不還天 (五淨居天)",
+              subtitle: "無煩天・無熱天・善現天・善見天・色究竟天 (阿迦膩吒天)",
+              lifespan: "1,000 大劫 (無煩天) 至 16,000 大劫 (色究竟天)",
+              desire: "斷盡欲界九品見思煩惱，純修無漏清淨禪定",
+              deities: "阿那含三果聖者、大論師、色究竟天盧舍那佛說法會眾",
+              status: "三果聖者永不退轉欲界・於此直趣證得阿羅漢果與究竟解脫",
+              description:
+                "【五淨居聖天格局（由下而上）】：\n• 無煩天（壽一千大劫）：無求無擾，不為煩惱雜念所動。\n• 無熱天（壽二千大劫）：意樂清涼，無一切熱惱煎熬。\n• 善現天（壽四千大劫）：微細善相妙境自然顯現。\n• 善見天（壽八千大劫）：定力明徹，智慧障礙極微。\n\n【三界器世間極頂・阿迦膩吒天（色究竟天，壽一萬六千大劫）】：\n• 宇宙極頂地位：三界一切物質形質所造器世間之最頂層邊界，其上即為無色界之純心識境界。\n• 大乘佛法深意：報身佛（盧舍那佛）常於此色究竟天摩醯首羅天宮顯現萬德莊嚴之身，為登地大菩薩宣說深妙法；三果聖者於此斷盡一切無明，證阿羅漢果，直入無餘涅槃。",
+            },
+          ],
+        },
+
+        // --- 4. 欲界第六天：他化自在天 (空居天頂) --- 尺寸放大 30% 並居中
+        {
+          id: "paranirmita",
+          title: "他化自在天",
+          category: "desire-sky",
+          isHotspot: false,
+          layout: { x: 928, y: 1950, width: 2145, height: 878 },
+          visuals: {
+            videoSrc: "./paranirmita_palace.mp4",
+            imgSrc: "./paranirmita_palace.png",
+            fallback:
+              "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=1000&q=80",
+          },
+          details: {
+            subtitle: "欲界第六層天 (欲界之頂・波旬天魔宮殿)",
+            description:
+              "梵語意為他化自在，為欲界最高層天，居於虛空萬道虹光之中：\n\n【奪他所化自在受用】：天人福德神力極大，自身不需勞心變化，悉奪下界諸天所幻化之現成七寶宮殿、天樂美食而自由受用娛樂，於欲境得大自在。\n【情欲型態】：欲界情愛最精微層次，男女若生愛慕，「相向熟視」（長久深情對視）即得滿足成辦欲事，無肉身接觸；子女生於天人膝上化生（初生如十歲童子，光明赫奕）。\n【天魔波旬與道障】：魔王波旬居於此天別宮，主宰欲界，因貪戀五欲權勢，恐眾生修道出離三界，常遣魔軍魔女障礙修行者（如佛陀成道前降伏魔障）。天壽達一萬六千天年（約人間92億年），福盡仍墮輪迴。",
+          },
+        },
+
+        // --- 5. 欲界第五天：化樂天 (空居) ---
+        {
+          id: "nirmanarati",
+          title: "化樂天 (樂變化天)",
+          category: "desire-sky",
+          isHotspot: false,
+          layout: { x: 1175, y: 2800, width: 1650, height: 675 },
+          visuals: {
+            videoSrc: "./nirmanarati_palace.mp4",
+            imgSrc: "./nirmanarati_palace.png",
+            fallback:
+              "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=1000&q=80",
+          },
+          details: {
+            subtitle: "欲界第五層天空居天 (隨念自化五欲之境)",
+            description:
+              "梵語意為樂變化天，居於兜率天之上、虛空七寶宮殿之中：\n\n【隨心幻化妙樂】：天人不假外求，欲受用色聲香味觸等五欲境界時，隨自身意念與神通力，瞬間於虛空中幻化出無量七寶宮殿、天樂華服與微妙美味，自娛自樂，受用完畢自然化散。\n【情欲型態】：男女情欲極其微細清純，無肢體牽纏，男女若生愛慕，「相向熟視、相視含笑」即得熱惱消除、成辦欲事；子女生於天人膝上化生（初生如七歲孩童）。\n【輪迴定位】：福報浩大，身自散發五彩光明，身長一由旬半；但因耽溺於自身心意幻化之極致五欲妙樂，易生執著，天壽盡時仍隨宿業輪迴。",
+          },
+        },
+
+        // --- 6. 欲界第四天：兜率天 (知足天・核心轉折) ---
+        {
+          id: "tushita",
+          title: "兜率陀天 (知足天宮)",
+          category: "desire-sky",
+          isHotspot: false,
+          layout: { x: 1175, y: 3650, width: 1650, height: 720 },
+          visuals: {
+            videoSrc: "./tushita_palace.mp4",
+            imgSrc: "./tushita_palace.png",
+            fallback:
+              "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1000&q=80",
+          },
+          details: {
+            subtitle: "欲界第四層天 (分內院淨土與外院天宮)",
+            description:
+              "梵語意為知足喜足，為欲界最殊勝之修行聖地。免除水火風三大災。以禪悅法喜與微妙天香為食；男女情愛極其純淨，唯執手相握、心意喜悅即解欲垢。\n\n【外院】：天人享清淨五欲福報，身長二里，天衣輕若無物（僅二銖重），身自發光。\n【內院】：一生補處彌勒菩薩說法道場，為超脫輪迴之不退轉淨土，待5.76億年後下生娑婆龍華三會度生。",
+          },
+        },
+
+        // --- 7. 欲界第三天：夜摩天 (空居) ---
+        {
+          id: "yama",
+          title: "夜摩天 (善時天・空居之始)",
+          category: "desire-sky",
+          isHotspot: false,
+          layout: { x: 1175, y: 4500, width: 1650, height: 675 },
+          visuals: {
+            videoSrc: "./yama_heaven.mp4",
+            imgSrc: "./yama_heaven.png",
+            fallback:
+              "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1000&q=80",
+          },
+          details: {
+            subtitle: "欲界第三層天 (超越日月星辰・空居天之始)",
+            description:
+              "此天居於虛空雲海之上，日夜長明，不見日月星辰，天人身自放光，以七寶蓮花開合區分晝夜。男女相擁相抱即成情慾。",
+          },
+        },
+
+        // --- 8. 欲界第二天：忉利天 (須彌山頂・地居熱區) ---
+        {
+          id: "trayastrimsa",
+          title: "忉利天 (三十三天)",
+          category: "desire-ground",
+          isHotspot: true,
+          layout: { x: 1475, y: 5350, width: 1050, height: 280 },
+          details: {
+            subtitle: "欲界第二層地居天 (須彌山頂善見城・玉皇居所)",
+            description:
+              "梵語意為三十三天，為地居天之頂，縱廣八萬由旬：\n\n【三十三天國格局】：非垂直層級，而是須彌山頂四方各八城（共32天國），中央為帝釋天所居之「善見城（喜見城）」與「殊勝殿」，合稱三十三天。\n【四大天苑與神樹】：周圍設有眾車苑、麤惡苑、雜林苑、喜林苑四大園林，中央矗立香聞百里之「波利質多神樹（圓生樹）」。天人定期於「善法堂」集會聽聞正法。\n【佛法淵源與情欲】：釋迦牟尼佛曾升此天為母摩耶夫人宣說《地藏經》。男女行欲以「風氣交會」即得清涼滿足，無不淨體液。若有修羅來犯，帝釋天率諸天於麤惡苑披甲應戰。",
+          },
+        },
+
+        // --- 9. 欲界第一天：四大天王天 (須彌山腰・地居熱區) ---
+        {
+          id: "caturmaharaja",
+          title: "四大天王天",
+          category: "desire-ground",
+          isHotspot: true,
+          layout: { x: 1400, y: 6200, width: 1200, height: 450 },
+          details: {
+            subtitle: "欲界第一層地居天 (須彌山腰犍陀羅山・護法首領)",
+            description:
+              "位於須彌山腰四萬二千由旬處，日月星辰環繞其上運轉，為距離人間最近之地居天：\n\n【四方天王鎮守】：\n• 東方持國天王（提頭賴吒）：鎮守東勝神洲，統領乾闥婆（香神）與緊那羅（樂神），手持琵琶以音律護國教化。\n• 南方增長天王（毘樓勒叉）：鎮守南瞻部洲，統領鳩槃荼與薛荔多，手握寶劍斬斷眾生煩惱、增長善根。\n• 西方廣目天王（毘樓博叉）：鎮守西牛賀洲，統領諸龍族與富單那，手纏神龍以淨天眼洞察世間無常。\n• 北方多聞天王（毘沙門天）：居四天王之首，鎮守北俱盧洲，統領夜叉羅剎，手持寶傘護法、賜予福德財寶。\n\n【人間巡視與生活】：每逢六齋日遣使者或親自巡視人間善惡記錄呈報善法堂。男女以「身形交接」成欲，子女生於天人膝上化生；統御山川江海各類地居善神。",
+          },
+        },
+
+        // --- 7. 人道：四大部洲 ---
+        {
+          id: "human-realm",
+          title: "人道 (四大部洲)",
+          category: "earth",
+          isHotspot: false,
+          layout: { x: 1175, y: 7100, width: 1650, height: 750 },
+          visuals: {
+            videoSrc: "./human_realm.mp4",
+            imgSrc: "./human_realm.png",
+            fallback:
+              "https://images.unsplash.com/photo-1508807526345-15e9b5f4eaff?auto=format&fit=crop&w=800&q=80",
+          },
+          details: {
+            subtitle: "南瞻部洲・東勝神洲・西牛賀洲・北俱盧洲",
+            description:
+              "居於須彌山外鹹海四大巨型陸地，各大洲各有兩座附屬中洲（合稱八中洲）與數百附屬小洲。四大洲地形、壽命與修道因緣各異，請點選上方部洲標籤檢視詳細經典記載。",
+          },
+          continents: [
+            {
+              id: "south",
+              name: "南瞻部洲 (閻浮提)",
+              shape: "形如車箱 / 梯形 (南狹北廣，人面相應)",
+              subIslands: "遮末羅洲、筏羅遮末羅洲 (二中洲) 及數百小洲",
+              lifespan: "無定數 (10歲至84,000歲增減劫循環)",
+              desire: "三欲具足 (飲食、睡眠、男女情愛)",
+              deities: "南洲轉輪聖王、示現成道之三世諸佛、求道僧俗",
+              status: "六道樞紐・知苦斷集・造業與解脫能力三界第一",
+              description:
+                "【幾何地貌】：南狹北廣，形如車箱（梯形），三邊長各二千由旬，南邊僅長三肘半。人面形亦隨地形上寬下窄。\n\n【附屬八中洲】：遮末羅洲（羅剎所居）、筏羅遮末羅洲。\n\n【因緣殊勝】：為唯一三世諸佛示現成道之地。眾生勇猛利根、記憶力強、能造殊勝業、能修清淨梵行，出離心最切。",
+            },
+            {
+              id: "east",
+              name: "東勝神洲 (弗婆提)",
+              shape: "形如半月 (東狹西廣，人面相應)",
+              subIslands: "提訶洲、毘提訶洲 (二中洲) 及數百小洲",
+              lifespan: "定壽 250 歲 (極少中夭)",
+              desire: "男女形交，性情純和清淡",
+              deities: "東勝身洲善神、弗婆提世俗人民",
+              status: "三善道・人道勝處・福報安和・少出離心",
+              description:
+                "【幾何地貌】：東狹西廣，形如半月形，東邊圓曲如月弦，其地廣袤九千由旬。人面形亦如半月。\n\n【附屬八中洲】：提訶洲、毘提訶洲。\n\n【生活狀態】：身形姝妙，身量高大（八肘），土地肥沃，無大寒暑，人民性情溫良和睦，生活安逸少苦。",
+            },
+            {
+              id: "west",
+              name: "西牛賀洲 (瞿耶尼)",
+              shape: "形如滿月 (圓盤形，人面相應)",
+              subIslands: "舍搋洲、嗢怛羅漫怛里拏洲 (二中洲) 及數百小洲",
+              lifespan: "定壽 500 歲",
+              desire: "飲食以牛酪為主，男女交會成欲",
+              deities: "西方多寶善神、瞿耶尼住民",
+              status: "三善道・多寶多畜・衣食無缺",
+              description:
+                "【幾何地貌】：周圓整齊如滿月（正圓形），直徑七千五百由旬，周圍二萬二千五百由旬。人面形亦圓如滿月。\n\n【附屬八中洲】：舍搋洲、嗢怛羅漫怛里拏洲。\n\n【生活狀態】：牛羊繁衍極多，多牛多羊多摩尼寶珠，人民以牛羊寶珠作為交易貨幣，生活豐足，身量約十六肘。",
+            },
+            {
+              id: "north",
+              name: "北俱盧洲 (鬱單越)",
+              shape: "形如方匣 (四方端正，人面相應)",
+              subIslands: "矩拉婆洲、憍拉婆洲 (二中洲) 及數百小洲",
+              lifespan: "定壽整整 1,000 歲 (無中夭)",
+              desire: "無私產婚配，男女悅意即相就於神樹下",
+              deities: "北洲具福人民",
+              status: "純受樂報・無佛法流傳・屬八難之一",
+              description:
+                "【幾何地貌】：四方均等，端正齊整如方匣，每邊各二千由旬。人面形亦呈四方形。\n\n【附屬八中洲】：矩拉婆洲、憍拉婆洲。\n\n【純樂生活與八難】：享自然粳米、天衣隨念取用，死後皆生忉利天；但因純受安樂而無苦難警醒，無出離心，諸佛不於此說法，列為「長壽北俱盧洲難」。",
+            },
+          ],
+        },
+
+        // --- 8. 阿修羅道 ---
+        {
+          id: "asura-realm",
+          title: "阿修羅道 (非天)",
+          category: "asura",
+          isHotspot: false,
+          layout: { x: 1175, y: 8000, width: 1650, height: 750 },
+          visuals: {
+            videoSrc: "./asura_realm.mp4",
+            imgSrc: "./asura_realm.png",
+            fallback:
+              "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1000&q=80",
+          },
+          details: {
+            subtitle: "地居與海居四重階層・四大阿修羅王宮殿",
+            description:
+              "梵語阿修羅意為「非天」或「無端正」。具天人之福報而無天人之德行，嗔恚嫉妒、好勇鬥狠。依《起世因本經》與《正法念處經》記載，阿修羅非全居於海底，而是依福報深淺分佈於須彌山麓下層海面、海島窟穴乃至大海深處四大階層。請點選上方標籤切換檢視四大阿修羅王之層級境界。",
+          },
+          asuraDivisions: [
+            {
+              id: "rahu",
+              name: "第一層・羅睺阿修羅王 (執日夜・近須彌山麓)",
+              subtitle: "居於大海水底二萬一千由旬・宮名光明城",
+              lifespan: "五千歲 (以人間五百年為一日夜)",
+              desire: "貪求天界妙樂、嫉妒日月光明，以嗔恚幻化身形",
+              deities: "羅睺阿修羅王 (障日阿修羅王)、羅睺眷屬",
+              status: "地居海面交界・身量極廣大・能以巨手障蔽日月形成日食月食",
+              description:
+                "【住處與身形】：居大海水底二萬一千由旬之光明城。其身形廣大無比，站立於大海中水僅及膝，頭頂直達須彌山頂忉利天。\n\n【經典事蹟】：每見日月天子光明赫奕，心生嫉妒，即以巨大手掌遮蔽日月宮殿，於世間示現「日蝕與月蝕」天象。\n\n【業因】：生前好行大布施，但心懷諂曲傲慢、好勝爭鬥，故感得廣大身形神力而受修羅果報。",
+            },
+            {
+              id: "samvara",
+              name: "第二層・勇健阿修羅王 (婆稚 / 執持)",
+              subtitle: "居於大海水底四萬二千由旬・宮名星宿蔓城",
+              lifespan: "六千歲 (以人間六百年為一日夜)",
+              desire: "迷執戰陣武勇、男女交會同人間",
+              deities: "婆稚阿修羅王 (勇健阿修羅王)、修羅戰將",
+              status: "海居中上層・常率修羅大軍自海中湧出與忉利天爭戰",
+              description:
+                "【住處與威勢】：居大海深處四萬二千由旬之星宿蔓城。宮殿皆以七寶莊嚴，周圍有七重寶牆與無量戰陣兵器。\n\n【爭戰因緣】：因嫉妒帝釋天有自然甘露天味而修羅界唯有雜味飲食，常率領百萬修羅勇士沿須彌山道直攻善見城，與四大天王及三十三天護法神大戰。",
+            },
+            {
+              id: "citraratha",
+              name: "第三層・花鬘阿修羅王 (華鬘 / 巧幻)",
+              subtitle: "居於大海水底六萬三千由旬・宮名善見城",
+              lifespan: "七千歲 (以人間七百年為一日夜)",
+              desire: "愛樂華麗服飾瓔珞、變化幻術娛樂",
+              deities: "華鬘阿修羅王 (巧帛阿修羅王)、妙音修羅女",
+              status: "海居深層・修羅女貌美絕倫・常為天人所娶",
+              description:
+                "【住處與特色】：居大海水底六萬三千由旬之深海寶城。精通種種幻術變化，能於海底幻化出微妙園林花鬘。\n\n【修羅女與天人聯姻】：修羅道男子相貌醜陋猙獰，但女子容顏絕世端嚴。帝釋天之正妻「舍脂夫人」即為阿修羅王之女；然而雙方常因聘禮與尊嚴爭端引發慘烈天人戰爭。",
+            },
+            {
+              id: "vemcitra",
+              name: "第四層・毘摩質多羅阿修羅王 (淨心 / 絲織)",
+              subtitle: "居於大海水底八萬四千由旬 (大海最底層)・宮名曼陀羅城",
+              lifespan: "八千歲 (以人間八百年為一日夜)",
+              desire: "法術幻力深厚、嗔怒如猛火",
+              deities: "毘摩質多羅阿修羅王、修羅根本始祖",
+              status: "海居極底・阿修羅道最高統領・身出水火音聲震動三界",
+              description:
+                "【住處與極底世界】：居大海極底八萬四千由旬處，直臨金剛地基。宮殿縱廣八萬由旬，有七寶階梯與無量深海樓閣。\n\n【神力與反撲】：為阿修羅道法力最強之王，口吐烈火、手搖大海。大戰時能撼動須彌山基、捲起滔天海浪侵逼天宮，後常為帝釋天以般若神咒與天帝杵所降伏。",
+            },
+          ],
+        },
+
+        // --- 9. 畜生道 (傍生界) ---
+        {
+          id: "animal-realm",
+          title: "畜生道 (傍生界)",
+          category: "animal",
+          isHotspot: false,
+          layout: { x: 1175, y: 8900, width: 1650, height: 750 },
+          visuals: {
+            videoSrc: "./animal_realm.mp4",
+            imgSrc: "./animal_realm.png",
+            fallback:
+              "https://images.unsplash.com/photo-1474511320723-9a56873867b5?auto=format&fit=crop&w=1000&q=80",
+          },
+          details: {
+            subtitle: "密林陸禽・深海水族・各類傍生",
+            description:
+              "披毛戴角、沉淪水陸。受愚癡業力牽引，不知修行，常受弱肉強食、吞噬屠戮與役使之苦。",
+          },
+        },
+
+        // --- 10. 餓鬼道 ---
+        {
+          id: "hungry-ghost-realm",
+          title: "餓鬼道 (幽冥界)",
+          category: "ghost",
+          isHotspot: false,
+          layout: { x: 1175, y: 9850, width: 1650, height: 750 },
+          visuals: {
+            videoSrc: "./hungry_ghost_realm.mp4",
+            imgSrc: "./hungry_ghost_realm.png",
+            fallback:
+              "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=1000&q=80",
+          },
+          details: {
+            subtitle: "荒原幽冥・焰口焦渴",
+            description:
+              "由極度慳貪嫉妒之業所感。肚大如鼓、喉細如針，口吐猛火，長劫不聞水漿之名，常受飢渴焚身之苦。",
+          },
+        },
+
+        // --- 11. 地獄道 ---
+        {
+          id: "hell-realm",
+          title: "地獄道 (八熱八寒)",
+          category: "hell",
+          isHotspot: false,
+          layout: { x: 1300, y: 10700, width: 1400, height: 750 },
+          visuals: {
+            videoSrc: "./hell_realm.mp4",
+            imgSrc: "./hell_realm.png",
+            fallback:
+              "https://images.unsplash.com/photo-1464802686167-b939a6910659?auto=format&fit=crop&w=1200&q=80",
+          },
+          details: {
+            subtitle: "地下無間深淵・極重惡業所感",
+            description:
+              "十惡不赦之罪魂所墜之處。受銅柱、鐵床、刀山、劍樹與寒冰等無量苦刑，直至惡業消盡方得轉生。",
+          },
+        },
+      ];
+
+      /**
+       * 2. 畫布渲染邏輯
+       */
+      const canvas = document.getElementById("canvas");
+      const panel = document.getElementById("info-panel");
+      const titleEl = document.getElementById("panel-title");
+      const subTitleEl = document.getElementById("panel-subtitle");
+      const contentEl = document.getElementById("panel-content");
+
+      // 祥雲過渡層資料 (穿插於各界交界處，配合新頂部高度)
+      const cloudLayers = [
+        { y: -300, opacity: 0.35, scale: 1.2 },
+        { y: 675, opacity: 0.45, scale: 1.4 },
+        { y: 1875, opacity: 0.5, scale: 1.3 },
+        { y: 2450, opacity: 0.55, scale: 1.3 },
+        { y: 3400, opacity: 0.6, scale: 1.4 },
+        { y: 4250, opacity: 0.65, scale: 1.5 },
+        { y: 5100, opacity: 0.65, scale: 1.5 },
+        { y: 6900, opacity: 0.55, scale: 1.3 },
+        { y: 8900, opacity: 0.7, scale: 1.4 },
+      ];
+
+      // 渲染祥雲過渡層 (加上 cloud-layer 類別以支援大千模式淡出)
+      cloudLayers.forEach((cloud) => {
+        const cloudEl = document.createElement("div");
+        cloudEl.className = "cloud-layer";
+        cloudEl.style.position = "absolute";
+        cloudEl.style.left = "0px";
+        cloudEl.style.top = `${cloud.y}px`;
+        cloudEl.style.width = "4000px";
+        cloudEl.style.height = "600px";
+        cloudEl.style.pointerEvents = "none";
+        cloudEl.style.opacity = cloud.opacity;
+        cloudEl.style.backgroundImage =
+          "radial-gradient(ellipse at 50% 50%, rgba(212, 175, 55, 0.25) 0%, rgba(200, 190, 180, 0.12) 20%, transparent 60%)";
+        cloudEl.style.filter = "blur(60px)";
+        cloudEl.style.transform = `scaleY(${cloud.scale})`;
+        canvas.appendChild(cloudEl);
+      });
+
+      // 擴充結構化元數據
+      const metaLifespanEl = document.getElementById("meta-lifespan");
+      const metaDesireEl = document.getElementById("meta-desire");
+      const metaDeitiesEl = document.getElementById("meta-deities");
+      const metaStatusEl = document.getElementById("meta-status");
+
+      // 補強 JSON 節點的結構化資訊
+      cosmologyData.forEach((node) => {
+        if (node.id === "pure-land") {
+          node.details.lifespan = "超越時空數劫・永恆真如無量壽";
+          node.details.desire = "斷盡見思、塵沙、無明三惑，永離一切貪愛結縛";
+          node.details.deities = "聲聞聖眾、辟支佛、大乘菩薩、十方三世一切諸佛";
+          node.details.status =
+            "超越分段與變易二種生死・十法界四聖極頂究竟解脫";
+        } else if (node.id === "formless-realm") {
+          node.details.lifespan =
+            "20,000 大劫（空無邊處）至 80,000 大劫（非想非非想處）";
+          node.details.desire = "無形無相無色身，純依四空定境維繫精神微細意樂";
+          node.details.deities = "四空定深修天人、外道極頂仙真 (如鬱頭藍弗)";
+          node.details.status =
+            "世間有漏定頂峰・定力耗盡必退轉墮落 (屬長壽天難)";
+        } else if (node.id === "form-realm") {
+          node.details.lifespan =
+            "半劫（初禪梵眾天）至 16,000 大劫（四禪色究竟天）";
+          node.details.desire = "永斷男女情愛與飲食欲，純受微細禪悅法喜";
+          node.details.deities =
+            "大梵天王、光音天人、廣果天人、五淨居天三果聖者";
+          node.details.status =
+            "凡夫十三天福盡仍退轉 / 五不還天永不退轉直證涅槃";
+        } else if (node.id === "paranirmita") {
+          node.details.lifespan =
+            "16,000天年 (人間約92億1600萬年，人間1600年為一日夜，身長二由旬)";
+          node.details.desire =
+            "相向熟視即滿欲事（長久凝視即除熱惱，無形質交會，初生如十歲化生膝上）";
+          node.details.deities =
+            "他化自在天王、欲界天魔波旬（魔王）、魔子魔女魔軍";
+          node.details.status =
+            "欲界最高極頂・奪他化自受用・貪執世俗欲權・天福享盡隨宿業輪迴";
+        } else if (node.id === "nirmanarati") {
+          node.details.lifespan =
+            "8,000天年 (人間約23億0400萬年，人間800年為一日夜，身長一由旬半)";
+          node.details.desire =
+            "相向熟視、相視含笑即得清涼滿足 (無身形觸碰，初生如七歲化生膝上)";
+          node.details.deities = "化自樂天王 (善化天王)、化樂天眾";
+          node.details.status =
+            "欲界空居福樂高境・隨念幻化自受用・未發無漏慧・福盡仍退轉輪迴";
+        } else if (node.id === "tushita") {
+          node.details.lifespan =
+            "4,000天年 (人間約5億7600萬年，人間400年為一日夜)";
+          node.details.desire = "執手相握、心意歡喜即滿欲 (免除三災)";
+          node.details.deities = "外院兜率天人 / 內院一生補處彌勒菩薩";
+          node.details.status = "外院知足享福 / 內院不退轉說法淨土";
+        } else if (node.id === "yama") {
+          node.details.lifespan =
+            "2,000天年 (人間約1億4400萬年，人間200年為一日夜)";
+          node.details.desire = "男女相抱相擁即滿足成欲";
+          node.details.deities = "夜摩天王 (牟修陀)";
+          node.details.status = "空居天之始・身自放光・蓮開為晝";
+        } else if (node.id === "trayastrimsa") {
+          node.details.lifespan =
+            "1,000天年 (人間約3600萬年，人間100年為一日夜，身長一由旬)";
+          node.details.desire =
+            "男女風氣交會（微細氣流宣洩即得熱惱消除，無精血不淨物，化生於膝上）";
+          node.details.deities =
+            "帝釋天 (釋提桓因/玉皇大帝)、三十二輔臣天王、善法堂護法諸天";
+          node.details.status =
+            "地居天頂・具五衰相 (衣垢/花萎/汗出/臭穢/不樂本座)・福盡隨業輪迴";
+        } else if (node.id === "caturmaharaja") {
+          node.details.lifespan =
+            "500天年 (人間約900萬年，人間50年為一日夜，身長半由旬)";
+          node.details.desire =
+            "男女身形交接成欲（與人間相近但微細清淨，初生如五歲孩童化生於膝上）";
+          node.details.deities =
+            "東方持國天王、南方增長天王、西方廣目天王、北方多聞天王（毘沙門）、八部鬼神使者";
+          node.details.status =
+            "地居天底・六齋日巡視人間善惡・護法神祇之首・福盡隨業受生輪迴";
+        } else if (node.id === "human-realm") {
+          node.details.lifespan =
+            "南洲10~84,000歲(增減劫無定數，現約百年) / 東洲定壽250歲 / 西洲定壽500歲 / 北洲定壽1000歲";
+          node.details.desire = "飲食資生、睡眠休息、男女形交情愛 (三欲具足)";
+          node.details.deities =
+            "南洲轉輪聖王、世俗凡夫、求道僧俗、示現成道之諸佛世尊";
+          node.details.status =
+            "六道樞紐・造業力與出離心最強・證悟解脫成佛之唯一根基";
+        } else if (node.id === "asura-realm") {
+          node.details.lifespan = "5,000歲 至 8,000歲 (依四大阿修羅王階層而定)";
+          node.details.desire = "嗔恚好勝、嫉妒天界甘露與光明、男女交會同人間";
+          node.details.deities = "羅睺王、婆稚王、華鬘王、毘摩質多羅王";
+          node.details.status = "三善道/非天・具天福而無天德・福盡隨宿業輪迴";
+        } else if (node.id === "animal-realm") {
+          node.details.lifespan = "數小時至數百年不等";
+          node.details.desire = "食欲、睡眠欲、交配欲 (本能)";
+          node.details.deities = "禽獸、水族、昆蟲、龍蛇";
+          node.details.status = "三惡道・愚癡沉淪";
+        } else if (node.id === "hungry-ghost-realm") {
+          node.details.lifespan = "五百歲 (人間約一萬五千年)";
+          node.details.desire = "極度貪求飲食而不可得";
+          node.details.deities = "焰口鬼王、無財鬼、少財鬼";
+          node.details.status = "三惡道・慳貪重罪受報";
+        } else if (node.id === "hell-realm") {
+          node.details.lifespan = "極其漫長 (數劫至無間)";
+          node.details.desire = "受極苦刑罰，無有樂受";
+          node.details.deities = "地獄罪魂、焰摩羅王、獄卒牛頭馬面";
+          node.details.status = "三惡道之底・受報消業";
+        }
+      });
+
+      // 瀏覽器音訊解鎖標記
+      let isAudioUnlocked = false;
+      function unlockAudioContext() {
+        if (!isAudioUnlocked) {
+          isAudioUnlocked = true;
+          updateNavHighlight();
+        }
+      }
+      window.addEventListener("pointerdown", unlockAudioContext);
+      window.addEventListener("wheel", unlockAudioContext);
+      window.addEventListener("keydown", unlockAudioContext);
+
+      // 處理入口畫面的點擊與音效
+      function enterExperience() {
+        const splash = document.getElementById("splash-screen");
+        const enterSound = document.getElementById("enter-sound");
+
+        // 播放自訂的進入音效
+        if (enterSound) {
+          enterSound.volume = 0.6;
+          enterSound
+            .play()
+            .catch((e) => console.log("無音效檔案或播放失敗", e));
+        }
+
+        // 觸發全域音訊解鎖 (迫使瀏覽器允許後續 MP4 的聲音播放)
+        unlockAudioContext();
+
+        // 淡出並隱藏入口畫面
+        splash.classList.add("hidden");
+      }
+
+      // 根據 JSON 資料生成 DOM 節點 (完全移除報錯的 WebGL Canvas，回歸純淨的 Video 渲染)
+      cosmologyData.forEach((node) => {
+        const el = document.createElement("div");
+        el.className = node.isHotspot ? "node hotspot-node" : "node";
+        el.id = `node-container-${node.id}`;
+        el.style.left = `${node.layout.x}px`;
+        el.style.top = `${node.layout.y}px`;
+        el.style.width = `${node.layout.width}px`;
+        el.style.height = `${node.layout.height}px`;
+
+        if (node.isHotspot) {
+          el.style.pointerEvents = "auto";
+          el.style.cursor = "pointer";
+          el.innerHTML = `
+            <div class="node-label-box" style="margin-top: 0; pointer-events: auto; cursor: pointer;">
+              <div class="node-title">${node.title}</div>
+              <div class="node-desc">${node.details.subtitle}</div>
+            </div>
+          `;
+          el.addEventListener("pointerdown", (e) => {
+            e.stopPropagation();
+            toggleInfoPanel(node);
+          });
+        } else {
+          // 【修復】：video 與 img 改用同一個相對定位容器疊放，並預設隱藏 video，避免載入前出現空白矩形
+          const mediaWrap = document.createElement("div");
+          mediaWrap.style.position = "relative";
+          mediaWrap.style.width = "100%";
+          mediaWrap.style.height = "75%";
+
+          const videoElement = document.createElement("video");
+          videoElement.className = "node-video";
+          videoElement.setAttribute("data-node-id", node.id);
+          videoElement.loop = true;
+          videoElement.playsInline = true;
+          videoElement.muted = true;
+          videoElement.autoplay = true;
+          videoElement.style.position = "absolute";
+          videoElement.style.inset = "0";
+          videoElement.style.height = "100%";
+          videoElement.style.display = "none";
+
+          const imgElement = document.createElement("img");
+          imgElement.className = "node-img";
+          imgElement.src = node.visuals.imgSrc;
+          imgElement.alt = node.title;
+          imgElement.style.position = "absolute";
+          imgElement.style.inset = "0";
+          imgElement.style.height = "100%";
+          imgElement.onerror = () => {
+            imgElement.src = node.visuals.fallback;
+          };
+
+          if (node.visuals.videoSrc) {
+            videoElement.src = node.visuals.videoSrc;
+
+            // 當影片成功讀取並開始播放時，隱藏備用圖片
+            videoElement.addEventListener("playing", () => {
+              imgElement.style.display = "none";
+              videoElement.style.display = "block";
+            });
+
+            // 如果影片載入失敗，隱藏影片，切換為備用圖片
+            videoElement.onerror = () => {
+              videoElement.style.display = "none";
+              imgElement.style.display = "block";
+            };
+
+            mediaWrap.appendChild(videoElement);
+            mediaWrap.appendChild(imgElement);
+          } else {
+            // 如果沒有填寫影片路徑，則只顯示圖片
+            imgElement.style.display = "block";
+            mediaWrap.appendChild(imgElement);
+          }
+
+          el.appendChild(mediaWrap);
+
+          const labelBox = document.createElement("div");
+          labelBox.className = "node-label-box";
+          labelBox.style.pointerEvents = "auto";
+          labelBox.style.cursor = "pointer";
+          labelBox.innerHTML = `
+            <div class="node-title">${node.title}</div>
+            <div class="node-desc">${node.details.subtitle}</div>
+          `;
+
+          el.appendChild(labelBox);
+
+          // 點擊事件綁定 (點擊影片或標籤皆可展開右側資訊面板)
+          [videoElement, imgElement, labelBox].forEach((target) => {
+            target.addEventListener("pointerdown", (e) => {
+              e.stopPropagation();
+              toggleInfoPanel(node);
+            });
+          });
+        }
+
+        canvas.appendChild(el);
+      });
+
+      // 實時計算畫面中心點最接近的節點：高亮總覽清單 ＋ 控制 MP4 播放與聲音
+      function updateNavHighlight() {
+        const availableCenterX = 280 + (window.innerWidth - 280) / 2;
+        const availableCenterY = window.innerHeight / 2;
+        const currentCanvasCenterY = (availableCenterY - translateY) / scale;
+
+        let closestNode = null;
+        let minDistance = Infinity;
+
+        cosmologyData.forEach((node) => {
+          const nodeCenterY = node.layout.y + node.layout.height / 2;
+          const distance = Math.abs(nodeCenterY - currentCanvasCenterY);
+          if (distance < minDistance) {
+            minDistance = distance;
+            closestNode = node;
+          }
+        });
+
+        if (closestNode) {
+          // 1. 高亮左側總覽清單
+          const navItems = document.querySelectorAll("#quick-nav .nav-item");
+          navItems.forEach((item) => {
+            if (item.getAttribute("data-node-id") === closestNode.id) {
+              item.classList.add("active-node");
+            } else {
+              item.classList.remove("active-node");
+            }
+          });
+
+          // 2. 影片有聲自動播放控制 (包含一般天界節點與須彌山主體 MP4)
+          const sumeruVid = document.getElementById("sumeru-mountain");
+          const isAtSumeru =
+            closestNode.id === "trayastrimsa" ||
+            closestNode.id === "caturmaharaja";
+
+          if (sumeruVid) {
+            if (isAtSumeru) {
+              if (isAudioUnlocked) {
+                sumeruVid.muted = false;
+                sumeruVid.volume = 1.0;
+              } else {
+                sumeruVid.muted = true;
+              }
+              if (sumeruVid.paused) {
+                sumeruVid.play().catch(() => {});
+              }
+            } else {
+              if (!sumeruVid.paused) {
+                sumeruVid.pause();
+                sumeruVid.currentTime = 0;
+              }
+            }
+          }
+
+          const allVideos = document.querySelectorAll(".node-video");
+          allVideos.forEach((vid) => {
+            const vidNodeId = vid.getAttribute("data-node-id");
+
+            if (vidNodeId === closestNode.id) {
+              if (isAudioUnlocked) {
+                vid.muted = false;
+                vid.volume = 1.0;
+              } else {
+                vid.muted = true;
+              }
+
+              if (vid.paused) {
+                const playPromise = vid.play();
+                if (playPromise !== undefined) {
+                  playPromise.catch(() => {
+                    vid.muted = true;
+                    vid.play().catch(() => {});
+                  });
+                }
+              }
+            } else {
+              if (!vid.paused) {
+                vid.pause();
+                vid.currentTime = 0;
+              }
+            }
+          });
+        }
+      }
+
+      // 確保點擊或觸控也能完美解鎖瀏覽器音訊 (因部分瀏覽器不承認滾輪為有效互動)
+      window.addEventListener("click", unlockAudioContext);
+      window.addEventListener("touchstart", unlockAudioContext);
+
+      // 追蹤當前開啟的節點 ID
+      let currentActiveNodeId = null;
+
+      // 經典業因果報流轉關係對照庫 (來源因緣與福盡去向)
+      const karmaRelations = {
+        "pure-land": {
+          sources: [
+            {
+              from: "human-realm",
+              cause: "持戒念佛・發菩提心・修三十七道品出離三界",
+            },
+            {
+              from: "form-realm",
+              cause: "五淨居天聖者斷盡無明・直證涅槃究竟法界",
+            },
+          ],
+          destinations: [
+            {
+              to: "human-realm",
+              effect: "倒駕慈航・以大悲願力示現十方微塵世界度生",
+            },
+          ],
+        },
+        "formless-realm": {
+          sources: [
+            {
+              from: "human-realm",
+              cause: "厭離一切色質形骸・精修四空世間有漏定",
+            },
+            {
+              from: "form-realm",
+              cause: "四禪天人進一步滅除色相・入空無邊處定",
+            },
+          ],
+          destinations: [
+            {
+              to: "hell-realm",
+              effect: "八萬大劫定盡・無明我執種子猶存・隨宿業直墮無間",
+            },
+            {
+              to: "animal-realm",
+              effect: "因定中謗法或宿世惡業牽引・墮為飛禽傍生",
+            },
+          ],
+        },
+        "form-realm": {
+          sources: [
+            {
+              from: "human-realm",
+              cause: "降伏五欲煩惱・修習初禪至四禪清淨禪定",
+            },
+            {
+              from: "paranirmita",
+              cause: "欲界天人福盡・心向寂靜禪定向上修證",
+            },
+          ],
+          destinations: [
+            {
+              to: "pure-land",
+              effect: "五不還天三果聖者修證無漏慧・出離三界直證阿羅漢",
+            },
+            {
+              to: "human-realm",
+              effect: "凡夫天禪定福盡退轉・下生人間轉為修道或帝王身",
+            },
+          ],
+        },
+        paranirmita: {
+          sources: [
+            { from: "human-realm", cause: "行上品十善業・但未斷微細情愛欲樂" },
+          ],
+          destinations: [
+            {
+              to: "animal-realm",
+              effect: "耽溺極致欲樂生貪執・天福享盡墮入畜生",
+            },
+            {
+              to: "hell-realm",
+              effect: "若隨波旬魔王障礙正法者・福盡直墮地獄",
+            },
+          ],
+        },
+        nirmanarati: {
+          sources: [
+            {
+              from: "human-realm",
+              cause: "行上品十善・樂行布施・心念清淨好樂妙樂",
+            },
+          ],
+          destinations: [
+            {
+              to: "human-realm",
+              effect: "天壽八千歲福盡・隨宿業轉生人間富貴家",
+            },
+          ],
+        },
+        tushita: {
+          sources: [
+            {
+              from: "human-realm",
+              cause: "行十善・修慈心三昧・深信願生彌勒內院",
+            },
+          ],
+          destinations: [
+            {
+              to: "human-realm",
+              effect: "未來隨彌勒如來下生娑婆・龍華三會聞法證果",
+            },
+          ],
+        },
+        yama: {
+          sources: [
+            { from: "human-realm", cause: "行中品十善・持五戒・好行布施修善" },
+          ],
+          destinations: [
+            { to: "human-realm", effect: "空居天福享盡・五衰相現・轉生人間" },
+          ],
+        },
+        trayastrimsa: {
+          sources: [
+            {
+              from: "human-realm",
+              cause: "修三十三種福德・恭敬三寶・造福世間 (如三十三人共造佛塔)",
+            },
+          ],
+          destinations: [
+            {
+              to: "asura-realm",
+              effect: "若生嗔恨嫉妒與修羅交戰心亂・福盡墮非天",
+            },
+            { to: "human-realm", effect: "天人五衰相現・命終隨宿業轉生世間" },
+          ],
+        },
+        caturmaharaja: {
+          sources: [
+            {
+              from: "human-realm",
+              cause: "修下品十善・孝養父母・恭敬師長・受持五戒",
+            },
+          ],
+          destinations: [
+            { to: "human-realm", effect: "地居天壽五百天年福盡・下生世間" },
+            {
+              to: "hungry-ghost-realm",
+              effect: "生前若兼有慳吝嫉妒心・退轉墮為大力鬼神",
+            },
+          ],
+        },
+        "human-realm": {
+          sources: [
+            { from: "trayastrimsa", cause: "天人福盡隨宿業下生" },
+            { from: "hell-realm", cause: "地獄重罪受報消盡・轉生人間得人身" },
+            { from: "animal-realm", cause: "傍生還債業畢・受持微善受生為人" },
+          ],
+          destinations: [
+            {
+              to: "pure-land",
+              effect: "修三十七道品・念佛修慧・出離六道證四聖果",
+            },
+            { to: "form-realm", effect: "修清淨梵行世間禪定・命終生色界禪天" },
+            {
+              to: "trayastrimsa",
+              effect: "修十善業・受持五戒・造大福德命終生天",
+            },
+            { to: "asura-realm", effect: "行善布施但嗔恨傲慢心重・命終生非天" },
+            { to: "animal-realm", effect: "愚癡無智・造下品十惡・命終墮傍生" },
+            {
+              to: "hungry-ghost-realm",
+              effect: "極度慳貪嫉妒・造中品十惡・命終墮幽冥焰口",
+            },
+            {
+              to: "hell-realm",
+              effect: "造五逆十惡重罪・毀謗三寶・命終直墮無間地獄",
+            },
+          ],
+        },
+        "asura-realm": {
+          sources: [
+            {
+              from: "human-realm",
+              cause: "好行布施修善・但嗔恨好勝・諂曲傲慢心重",
+            },
+          ],
+          destinations: [
+            {
+              to: "hell-realm",
+              effect: "常年與帝釋天大戰・造極大殺業・命終直墮地獄",
+            },
+            {
+              to: "animal-realm",
+              effect: "嗔心猛烈・戰死後墮入海中龍蛇毒蟲傍生",
+            },
+          ],
+        },
+        "animal-realm": {
+          sources: [
+            {
+              from: "human-realm",
+              cause: "造下品十惡業・愚癡不信因果・貪食貪睡",
+            },
+            {
+              from: "formless-realm",
+              cause: "長壽天定盡退轉・宿世惡業發動直墜傍生",
+            },
+          ],
+          destinations: [
+            { to: "human-realm", effect: "畜生宿業償清・轉生為人" },
+            {
+              to: "hungry-ghost-realm",
+              effect: "因互相吞噬造業・轉墮餓鬼道受飢渴苦",
+            },
+          ],
+        },
+        "hungry-ghost-realm": {
+          sources: [
+            {
+              from: "human-realm",
+              cause: "造中品十惡・極度慳吝貪婪・不肯施捨・阻人行善",
+            },
+          ],
+          destinations: [
+            {
+              to: "animal-realm",
+              effect: "鬼道業報漸盡・轉生為牛馬駝驢償還宿債",
+            },
+            {
+              to: "human-realm",
+              effect: "得遇佛法超度蒙施甘露・消業轉生人間貧窮身",
+            },
+          ],
+        },
+        "hell-realm": {
+          sources: [
+            {
+              from: "human-realm",
+              cause: "造上品十惡・犯弒父弒母殺阿羅漢等五逆十惡重罪",
+            },
+            { from: "asura-realm", cause: "修羅戰神嗔火熾盛・造無邊殺伐罪業" },
+          ],
+          destinations: [
+            {
+              to: "hungry-ghost-realm",
+              effect: "地獄極苦受盡・餘罪猶存・輾轉生於餓鬼道",
+            },
+            { to: "animal-realm", effect: "重罪消盡・次受傍生身償宿世命債" },
+            { to: "human-realm", effect: "惡業徹底消盡・得生人間諸根不具之身" },
+          ],
+        },
+      };
+
+      // 輔助函式：繪製因果流轉光束曲線
+      function renderKarmaPaths(currentNodeId) {
+        const karmaSvg = document.getElementById("karma-svg");
+        if (!karmaSvg) return;
+        karmaSvg.innerHTML = "";
+
+        const currentTarget = cosmologyData.find((n) => n.id === currentNodeId);
+        const relation = karmaRelations[currentNodeId];
+        if (!currentTarget || !relation) return;
+
+        const cX = currentTarget.layout.x + currentTarget.layout.width / 2;
+        const cY = currentTarget.layout.y + currentTarget.layout.height / 2;
+
+        // 1. 繪製「如何投生至此 (綠色光束)」
+        if (relation.sources) {
+          relation.sources.forEach((src) => {
+            const srcNode = cosmologyData.find((n) => n.id === src.from);
+            if (srcNode) {
+              const sX = srcNode.layout.x + srcNode.layout.width / 2;
+              const sY = srcNode.layout.y + srcNode.layout.height / 2;
+              const ctrlX = (sX + cX) / 2 - 350;
+              const ctrlY = (sY + cY) / 2;
+
+              const path = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "path",
+              );
+              path.setAttribute(
+                "d",
+                `M ${sX} ${sY} Q ${ctrlX} ${ctrlY} ${cX} ${cY}`,
+              );
+              path.setAttribute("fill", "none");
+              path.setAttribute("stroke", "#2ecc71");
+              path.setAttribute("stroke-width", "5");
+              path.setAttribute("class", "karma-path-in");
+              karmaSvg.appendChild(path);
+
+              const glow = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "path",
+              );
+              glow.setAttribute(
+                "d",
+                `M ${sX} ${sY} Q ${ctrlX} ${ctrlY} ${cX} ${cY}`,
+              );
+              glow.setAttribute("fill", "none");
+              glow.setAttribute("stroke", "rgba(46, 204, 113, 0.25)");
+              glow.setAttribute("stroke-width", "12");
+              karmaSvg.appendChild(glow);
+            }
+          });
+        }
+
+        // 2. 繪製「福盡將往何處去 (紅色光束)」
+        if (relation.destinations) {
+          relation.destinations.forEach((dest) => {
+            const destNode = cosmologyData.find((n) => n.id === dest.to);
+            if (destNode) {
+              const dX = destNode.layout.x + destNode.layout.width / 2;
+              const dY = destNode.layout.y + destNode.layout.height / 2;
+              const ctrlX = (cX + dX) / 2 + 350;
+              const ctrlY = (cY + dY) / 2;
+
+              const path = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "path",
+              );
+              path.setAttribute(
+                "d",
+                `M ${cX} ${cY} Q ${ctrlX} ${ctrlY} ${dX} ${dY}`,
+              );
+              path.setAttribute("fill", "none");
+              path.setAttribute("stroke", "#e74c3c");
+              path.setAttribute("stroke-width", "5");
+              path.setAttribute("class", "karma-path-out");
+              karmaSvg.appendChild(path);
+
+              const glow = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "path",
+              );
+              glow.setAttribute(
+                "d",
+                `M ${cX} ${cY} Q ${ctrlX} ${ctrlY} ${dX} ${dY}`,
+              );
+              glow.setAttribute("fill", "none");
+              glow.setAttribute("stroke", "rgba(231, 76, 60, 0.25)");
+              glow.setAttribute("stroke-width", "12");
+              karmaSvg.appendChild(glow);
+            }
+          });
+        }
+      }
+
+      function clearKarmaPaths() {
+        const karmaSvg = document.getElementById("karma-svg");
+        if (karmaSvg) karmaSvg.innerHTML = "";
+      }
+
+      // 設定畫布容器的過渡濾鏡樣式 (支援背景變暗與模糊壓暗特效)
+      canvas.style.transition = "filter 0.5s ease";
+
+      // 輔助函式：套用/解除視圖暗化與模糊焦點濾鏡
+      function setVignetteFocus(active) {
+        if (active) {
+          canvas.style.filter = "brightness(0.35) blur(4px)";
+        } else {
+          canvas.style.filter = "none";
+          clearKarmaPaths();
+        }
+      }
+
+      // 九山八海（七金山、八海、鐵圍山）之經典階梯同心層級資料
+      const nineMountainsEightSeasData = [
+        {
+          name: "須彌山 (妙高山)",
+          type: "山",
+          height: "高 80,000 由旬",
+          desc: "中軸主山，四寶所成（金、銀、琉璃、玻瓈），入水八萬由旬，出水八萬由旬。",
+        },
+        {
+          name: "第一・香水海",
+          type: "海",
+          width: "廣 80,000 由旬",
+          desc: "具足澄淨、清冷、甘美、輕軟、潤澤、安和、除飢渴、長養諸根等八功德水。",
+        },
+        {
+          name: "第一・雙鳩山 (持雙山)",
+          type: "山",
+          height: "高 40,000 由旬",
+          desc: "純金所成，山開兩頭，有二峰並峙如鳩鳥相向。",
+        },
+        {
+          name: "第二・香水海",
+          type: "海",
+          width: "廣 40,000 由旬",
+          desc: "第二重八功德香水海，水面生優曇缽羅等種種妙寶蓮華。",
+        },
+        {
+          name: "第二・持軸山 (持車軸山)",
+          type: "山",
+          height: "高 20,000 由旬",
+          desc: "純金所成，其山頂平整廣袤如車軸輪轉。",
+        },
+        {
+          name: "第三・香水海",
+          type: "海",
+          width: "廣 20,000 由旬",
+          desc: "第三重香水海，海水微香清冽，諸天妙鳥翔集。",
+        },
+        {
+          name: "第三・擔木山 (憺木山)",
+          type: "山",
+          height: "高 10,000 由旬",
+          desc: "純金所成，林木森鬱，如擔木列植挺拔。",
+        },
+        {
+          name: "第四・香水海",
+          type: "海",
+          width: "廣 10,000 由旬",
+          desc: "第四重香水海，深澄湛藍，微風不起細浪。",
+        },
+        {
+          name: "第四・善見山 (大善見山)",
+          type: "山",
+          height: "高 5,000 由旬",
+          desc: "純金所成，地相端嚴姝妙，見者心生歡喜。",
+        },
+        {
+          name: "第五・香水海",
+          type: "海",
+          width: "廣 5,000 由旬",
+          desc: "第五重香水海，常散七寶微妙光明。",
+        },
+        {
+          name: "第五・馬耳山",
+          type: "山",
+          height: "高 2,500 由旬",
+          desc: "純金所成，兩峰高聳如駿馬雙耳。",
+        },
+        {
+          name: "第六・香水海",
+          type: "海",
+          width: "廣 2,500 由旬",
+          desc: "第六重香水海，水質輕清甘芳。",
+        },
+        {
+          name: "第六・障礙山 (象鼻山)",
+          type: "山",
+          height: "高 1,250 由旬",
+          desc: "純金所成，盤紆阻隔如巨象垂鼻。",
+        },
+        {
+          name: "第七・香水海",
+          type: "海",
+          width: "廣 1,250 由旬",
+          desc: "第七重香水海，內海最外層界限。",
+        },
+        {
+          name: "第七・持地山 (尼民達羅山)",
+          type: "山",
+          height: "高 625 由旬",
+          desc: "純金所成，七金山之最外圍，地基深固護持內地。",
+        },
+        {
+          name: "第八・大鹹水海",
+          type: "海",
+          width: "廣 322,000 由旬",
+          desc: "鹹水大洋，人道四大部洲、八中洲、數百小洲及阿修羅宮皆居於此海中。",
+        },
+        {
+          name: "大鐵圍山 (斫迦羅山)",
+          type: "山",
+          height: "高 312.5 由旬",
+          desc: "純黑鐵所成，如巨型環形外牆封閉包覆整個小世界，阻隔外在幽冥。",
+        },
+      ];
+
+      // 切換說明面板開關狀態 (點擊同一個節點收起，點擊不同節點切換，並支援四大部洲與九山八海階梯視圖)
+      function toggleInfoPanel(node) {
+        const tabContainer = document.getElementById("continent-tab-container");
+        const diagramBox = document.getElementById("diagram-box");
+
+        if (
+          panel.classList.contains("active") &&
+          currentActiveNodeId === node.id
+        ) {
+          panel.classList.remove("active");
+          currentActiveNodeId = null;
+          setVignetteFocus(false);
+        } else {
+          currentActiveNodeId = node.id;
+          titleEl.textContent = node.title;
+          subTitleEl.textContent = node.details.subtitle;
+
+          // 組裝業因果報路徑文字說明
+          const karma = karmaRelations[node.id];
+          let karmaText = "";
+          if (karma) {
+            karmaText += "\n\n━━━━━━━━━━━━━━━━━━━━\n✦【業因果報流轉路徑圖】✦\n";
+            if (karma.sources && karma.sources.length > 0) {
+              karmaText += "🟢【如何投生至此（因緣）】：\n";
+              karma.sources.forEach((s) => {
+                const srcNode = cosmologyData.find((n) => n.id === s.from);
+                karmaText += ` • 來自 [${srcNode ? srcNode.title : s.from}] ➔ ${s.cause}\n`;
+              });
+            }
+            if (karma.destinations && karma.destinations.length > 0) {
+              karmaText += "\n🔴【福盡將往何處（果報）】：\n";
+              karma.destinations.forEach((d) => {
+                const destNode = cosmologyData.find((n) => n.id === d.to);
+                karmaText += ` • 轉往 [${destNode ? destNode.title : d.to}] ➔ ${d.effect}\n`;
+              });
+            }
+          }
+
+          contentEl.textContent = node.details.description + karmaText;
+
+          metaLifespanEl.textContent = node.details.lifespan || "--";
+          metaDesireEl.textContent = node.details.desire || "--";
+          metaDeitiesEl.textContent = node.details.deities || "--";
+          metaStatusEl.textContent = node.details.status || "--";
+
+          // 於畫布上即時繪製對應之因果流轉光束曲線 (綠色入流、紅色出流)
+          renderKarmaPaths(node.id);
+
+          // 若為四聖法界節點，渲染四種淨土體系二級分支按鈕
+          if (node.id === "pure-land" && node.pureLandDivisions) {
+            tabContainer.innerHTML = "";
+            tabContainer.style.display = "flex";
+            if (diagramBox) diagramBox.style.display = "none";
+
+            node.pureLandDivisions.forEach((div) => {
+              const btn = document.createElement("button");
+              btn.className = "continent-tab-btn";
+              btn.textContent = div.name.split(" ")[0];
+              btn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                document
+                  .querySelectorAll(".continent-tab-btn")
+                  .forEach((b) => b.classList.remove("active-tab"));
+                btn.classList.add("active-tab");
+
+                titleEl.textContent = div.name;
+                subTitleEl.textContent = div.subtitle;
+                metaLifespanEl.textContent = div.lifespan;
+                metaDesireEl.textContent = div.desire;
+                metaDeitiesEl.textContent = div.deities;
+                metaStatusEl.textContent = div.status;
+                contentEl.textContent = div.description;
+              });
+              tabContainer.appendChild(btn);
+            });
+          } else if (node.id === "form-realm" && node.formDivisions) {
+            tabContainer.innerHTML = "";
+            tabContainer.style.display = "flex";
+            if (diagramBox) diagramBox.style.display = "none";
+
+            node.formDivisions.forEach((div) => {
+              const btn = document.createElement("button");
+              btn.className = "continent-tab-btn";
+              btn.textContent = div.name.split(" ")[0];
+              btn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                document
+                  .querySelectorAll(".continent-tab-btn")
+                  .forEach((b) => b.classList.remove("active-tab"));
+                btn.classList.add("active-tab");
+
+                titleEl.textContent = div.name;
+                subTitleEl.textContent = div.subtitle;
+                metaLifespanEl.textContent = div.lifespan;
+                metaDesireEl.textContent = div.desire;
+                metaDeitiesEl.textContent = div.deities;
+                metaStatusEl.textContent = div.status;
+                contentEl.textContent = div.description;
+              });
+              tabContainer.appendChild(btn);
+            });
+          } else if (node.id === "asura-realm" && node.asuraDivisions) {
+            tabContainer.innerHTML = "";
+            tabContainer.style.display = "flex";
+            if (diagramBox) diagramBox.style.display = "none";
+
+            node.asuraDivisions.forEach((div) => {
+              const btn = document.createElement("button");
+              btn.className = "continent-tab-btn";
+              btn.textContent = div.name.split("・")[1]
+                ? div.name.split("・")[1].split(" ")[0]
+                : div.name.split(" ")[0];
+              btn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                document
+                  .querySelectorAll(".continent-tab-btn")
+                  .forEach((b) => b.classList.remove("active-tab"));
+                btn.classList.add("active-tab");
+
+                titleEl.textContent = div.name;
+                subTitleEl.textContent = div.subtitle;
+                metaLifespanEl.textContent = div.lifespan;
+                metaDesireEl.textContent = div.desire;
+                metaDeitiesEl.textContent = div.deities;
+                metaStatusEl.textContent = div.status;
+                contentEl.textContent = div.description;
+              });
+              tabContainer.appendChild(btn);
+            });
+          } else if (node.id === "human-realm" || node.id === "trayastrimsa") {
+            tabContainer.innerHTML = "";
+            tabContainer.style.display = "flex";
+
+            // 1. 九山八海橫向展開按鈕
+            const seaBtn = document.createElement("button");
+            seaBtn.className = "continent-tab-btn";
+            seaBtn.textContent = "🌊 九山八海全圖";
+            seaBtn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              document
+                .querySelectorAll(".continent-tab-btn")
+                .forEach((b) => b.classList.remove("active-tab"));
+              seaBtn.classList.add("active-tab");
+
+              // 顯示同心圓圖形
+              renderNineMountainsSvg();
+
+              titleEl.textContent = "九山八海・七金山";
+              subTitleEl.textContent =
+                "【結構】：由內至外重重環繞之同心階梯山海格局";
+              metaLifespanEl.textContent = "器世間成壞四劫（一中劫住劫）";
+              metaDesireEl.textContent = "水陸各類地居與水居眾生依止所";
+              metaDeitiesEl.textContent =
+                "四大天王護法善神、娑竭羅龍王、大海阿修羅";
+              metaStatusEl.textContent = "世界安立根基・最外圍由大鐵圍山包覆";
+
+              let mountainHtml = "【《俱舍論》九山八海階梯同心展開】：\n\n";
+              nineMountainsEightSeasData.forEach((item, index) => {
+                mountainHtml += `${index + 1}. [${item.type}] ${item.name} (${item.height || item.width})\n   ↳ ${item.desc}\n\n`;
+              });
+              contentEl.textContent = mountainHtml;
+            });
+            tabContainer.appendChild(seaBtn);
+
+            // 2. 四大部洲子標籤按鈕
+            if (node.continents && node.continents.length > 0) {
+              node.continents.forEach((cont) => {
+                const btn = document.createElement("button");
+                btn.className = "continent-tab-btn";
+                btn.textContent = cont.name.split(" ")[0];
+                btn.addEventListener("click", (e) => {
+                  e.stopPropagation();
+                  document
+                    .querySelectorAll(".continent-tab-btn")
+                    .forEach((b) => b.classList.remove("active-tab"));
+                  btn.classList.add("active-tab");
+
+                  // 切換到單一部洲時隱藏九山八海俯瞰圖
+                  diagramBox.style.display = "none";
+
+                  titleEl.textContent = cont.name;
+                  subTitleEl.textContent = `【外形】：${cont.shape}`;
+                  metaLifespanEl.textContent = cont.lifespan;
+                  metaDesireEl.textContent = cont.desire;
+                  metaDeitiesEl.textContent = cont.deities;
+                  metaStatusEl.textContent = cont.status;
+                  contentEl.textContent = `${cont.description}\n\n【附屬島嶼】：${cont.subIslands}`;
+                });
+                tabContainer.appendChild(btn);
+              });
+            }
+          } else {
+            tabContainer.style.display = "none";
+            const diagramBox = document.getElementById("diagram-box");
+            if (diagramBox) diagramBox.style.display = "none";
+          }
+
+          panel.classList.add("active");
+          setVignetteFocus(true);
+        }
+      }
+
+      // 左側導覽列跳轉：自動收起右側說明面板並平滑移動視角
+      function selectNodeById(nodeId) {
+        // 若說明欄處於展開狀態，自動收起
+        if (panel.classList.contains("active")) {
+          panel.classList.remove("active");
+          currentActiveNodeId = null;
+          setVignetteFocus(false);
+        }
+
+        const node = cosmologyData.find((n) => n.id === nodeId);
+        if (!node) return;
+
+        const centerX = node.layout.x + node.layout.width / 2;
+        const centerY = node.layout.y + node.layout.height / 2;
+
+        const targetScale = 0.45;
+        // 計算主體置中位置（避開左側 280px 導覽列）
+        const availableCenterX = 280 + (window.innerWidth - 280) / 2;
+        const availableCenterY = window.innerHeight / 2;
+
+        const targetTranslateX = availableCenterX - centerX * targetScale;
+        const targetTranslateY = availableCenterY - centerY * targetScale;
+
+        smoothJumpTo(targetTranslateX, targetTranslateY, targetScale, 600);
+      }
+
+      // 關閉面板
+      document.getElementById("close-panel").addEventListener("click", () => {
+        panel.classList.remove("active");
+        currentActiveNodeId = null;
+        setVignetteFocus(false);
+      });
+
+      /**
+       * 平滑動畫跳轉鏡頭功能 (Smooth Pan & Zoom Animation)
+       */
+      let animId = null;
+      function smoothJumpTo(
+        endTranslateX,
+        endTranslateY,
+        targetScale,
+        duration = 600,
+      ) {
+        if (animId) cancelAnimationFrame(animId);
+
+        const startScale = scale;
+        const startTranslateX = translateX;
+        const startTranslateY = translateY;
+
+        const startTime = performance.now();
+
+        function animate(currentTime) {
+          const elapsed = currentTime - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          // Ease-out cubic 曲線
+          const ease = 1 - Math.pow(1 - progress, 3);
+
+          scale = startScale + (targetScale - startScale) * ease;
+          translateX =
+            startTranslateX + (endTranslateX - startTranslateX) * ease;
+          translateY =
+            startTranslateY + (endTranslateY - startTranslateY) * ease;
+
+          updateTransform();
+
+          if (progress < 1) {
+            animId = requestAnimationFrame(animate);
+          }
+        }
+        animId = requestAnimationFrame(animate);
+      }
+
+      /**
+       * 3. 畫布拖曳與縮放邏輯 (Pan & Zoom)
+       */
+      const viewport = document.getElementById("viewport");
+      let scale = 0.45; // 1) 預設放大比例，開啟時直接清晰檢視細節
+      // 預設初始位置：自動向右避開左側導覽框，鏡頭對準須彌山核心區 (Y: 5900)
+      let translateX = 280 + (window.innerWidth - 280) / 2 - 2000 * scale;
+      let translateY = window.innerHeight / 2 - 5900 * scale;
+
+      let isDragging = false;
+      let startX, startY;
+
+      // 動態建立三千大千世界微塵小世界網 (中心保留最強光核，象徵原本探索的須彌山娑婆世界)
+      function initMacroCosmos() {
+        const cosmosLayer = document.getElementById("macro-cosmos-layer");
+        if (!cosmosLayer) return;
+
+        let svgHtml = `
+          <svg class="cosmos-matrix-svg" width="30000" height="30000" viewBox="-15000 -15000 30000 30000">
+            <defs>
+              <!-- 周圍千百億小世界光暈 -->
+              <radialGradient id="worldGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
+                <stop offset="35%" stop-color="#f1c40f" stop-opacity="0.85" />
+                <stop offset="70%" stop-color="#3498db" stop-opacity="0.4" />
+                <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+              </radialGradient>
+
+              <!-- 中心本源世界耀眼金光核 (核心標誌) -->
+              <radialGradient id="originCoreGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
+                <stop offset="20%" stop-color="#fff8db" stop-opacity="1" />
+                <stop offset="50%" stop-color="#f39c12" stop-opacity="0.9" />
+                <stop offset="80%" stop-color="#e74c3c" stop-opacity="0.5" />
+                <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+              </radialGradient>
+            </defs>
+
+            <!-- 1. 中心原本世界 (最耀眼大光核與雙重光暈) -->
+            <g transform="translate(0, 0)">
+              <!-- 外層脈衝光芒環 -->
+              <circle cx="0" cy="0" r="280" fill="none" stroke="rgba(241, 196, 15, 0.4)" stroke-width="3" stroke-dasharray="12, 8" />
+              <circle cx="0" cy="0" r="200" fill="none" stroke="rgba(255, 255, 255, 0.7)" stroke-width="4" />
+              <!-- 超強本源光核 -->
+              <circle cx="0" cy="0" r="160" fill="url(#originCoreGlow)" style="filter: drop-shadow(0 0 45px #f1c40f);" />
+              <text x="0" y="8" font-size="28" fill="#ffffff" text-anchor="middle" font-weight="bold" letter-spacing="4">娑婆世界</text>
+            </g>
+        `;
+
+        // 產生 1,000 個微縮小世界節點，依費馬螺線分佈呈現千百億世界海格局
+        const totalWorlds = 1000;
+        const c = 380;
+        for (let i = 1; i <= totalWorlds; i++) {
+          const theta = i * 137.508 * (Math.PI / 180);
+          const r = c * Math.sqrt(i);
+          const wx = r * Math.cos(theta);
+          const wy = r * Math.sin(theta);
+          const size = Math.max(16, 42 - (r / 15000) * 20);
+
+          svgHtml += `
+            <g transform="translate(${wx}, ${wy})">
+              <!-- 外圍鐵圍山光暈環 -->
+              <circle cx="0" cy="0" r="${size * 1.6}" fill="none" stroke="rgba(212, 175, 55, 0.4)" stroke-width="1.5" />
+              <!-- 小世界中心光核 (須彌山微塵) -->
+              <circle cx="0" cy="0" r="${size}" fill="url(#worldGlow)" />
+            </g>
+          `;
+        }
+
+        svgHtml += `</svg>`;
+        cosmosLayer.innerHTML = svgHtml;
+      }
+      initMacroCosmos();
+
+      function updateTransform() {
+        requestAnimationFrame(() => {
+          canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+          updateNavHighlight();
+
+          // 當縮小至極限 (scale < 0.05) 時，切換為「一微塵中見大千」三千大千世界矩陣並隱藏原三界
+          const cosmosLayer = document.getElementById("macro-cosmos-layer");
+          const cosmosHint = document.getElementById("macro-cosmos-hint");
+
+          if (cosmosLayer && cosmosHint) {
+            if (scale < 0.05) {
+              const macroOpacity = Math.min(1, (0.05 - scale) / 0.035);
+              cosmosLayer.style.opacity = macroOpacity;
+              cosmosHint.style.opacity = macroOpacity;
+              canvas.classList.add("macro-mode");
+            } else {
+              cosmosLayer.style.opacity = 0;
+              cosmosHint.style.opacity = 0;
+              canvas.classList.remove("macro-mode");
+            }
+          }
+        });
+      }
+
+      // 初始渲染
+      updateTransform();
+
+      // 點擊說明欄以外的任何區域自動收起說明欄
+      window.addEventListener("pointerdown", (e) => {
+        if (!panel.classList.contains("active")) return;
+        // 如果點擊目標在側邊欄內部、快捷導覽列內部，或是大千世界提示鈕，則不觸發關閉
+        if (
+          panel.contains(e.target) ||
+          e.target.closest("#quick-nav") ||
+          e.target.closest("#macro-cosmos-hint") ||
+          e.target.closest(".node-label-box") ||
+          e.target.closest(".node-img") ||
+          e.target.closest(".node-video")
+        ) {
+          return;
+        }
+        panel.classList.remove("active");
+        currentActiveNodeId = null;
+        setVignetteFocus(false);
+      });
+
+      // 滑鼠/觸控拖曳 (Pan)
+      viewport.addEventListener("pointerdown", (e) => {
+        if (e.target !== viewport && e.target !== canvas) return; // 點擊在節點上不拖曳
+        isDragging = true;
+        startX = e.clientX - translateX;
+        startY = e.clientY - translateY;
+        viewport.setPointerCapture(e.pointerId);
+      });
+
+      viewport.addEventListener("pointermove", (e) => {
+        if (!isDragging) return;
+        translateX = e.clientX - startX;
+        translateY = e.clientY - startY;
+        updateTransform();
+      });
+
+      viewport.addEventListener("pointerup", (e) => {
+        isDragging = false;
+        viewport.releasePointerCapture(e.pointerId);
+      });
+
+      // 觸控板與滾輪處理：支援雙指滑動平移、雙指開合縮放、2) 按住 Command + 滾輪上/下縮放 (允許縮小至 0.01)
+      viewport.addEventListener(
+        "wheel",
+        (e) => {
+          e.preventDefault(); // 阻止瀏覽器預設滾動與原生縮放
+
+          const rect = viewport.getBoundingClientRect();
+          const mouseX = e.clientX - rect.left;
+          const mouseY = e.clientY - rect.top;
+
+          // 判斷是否為縮放操作：觸控板雙指開合 (ctrlKey) 或 按住 Command 鍵滾動 (metaKey)
+          if (e.ctrlKey || e.metaKey) {
+            const zoomFactor = Math.exp(-e.deltaY * 0.01);
+            let newScale = scale * zoomFactor;
+            // 允許縮小至 0.01，解鎖大千世界
+            newScale = Math.max(0.01, Math.min(newScale, 2));
+
+            // 以滑鼠/手勢當前指向位置為中心進行縮放
+            translateX = mouseX - (mouseX - translateX) * (newScale / scale);
+            translateY = mouseY - (mouseY - translateY) * (newScale / scale);
+            scale = newScale;
+          } else {
+            // 一般雙指滑動：平移移動畫布
+            translateX -= e.deltaX;
+            translateY -= e.deltaY;
+          }
+
+          updateTransform();
+        },
+        { passive: false },
+      );
+
+      /**
+       * 視角控制輔助功能
+       */
+      function zoomBy(factor) {
+        const newScale = Math.max(0.01, Math.min(scale * factor, 2));
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+        translateX = centerX - (centerX - translateX) * (newScale / scale);
+        translateY = centerY - (centerY - translateY) * (newScale / scale);
+        scale = newScale;
+        updateTransform();
+      }
+
+      function resetView() {
+        const defaultScale = 0.45;
+        const defaultTranslateX =
+          280 + (window.innerWidth - 280) / 2 - 2000 * defaultScale;
+        const defaultTranslateY = window.innerHeight / 2 - 5900 * defaultScale;
+        smoothJumpTo(defaultTranslateX, defaultTranslateY, defaultScale, 800);
+      }
+
+      // 點擊「一微塵中見大千」膠囊按鈕時，自動遠距縮放並展開三千大千世界結構說明面板
+      function openMacroCosmosPanel() {
+        const tabContainer = document.getElementById("continent-tab-container");
+        const diagramBox = document.getElementById("diagram-box");
+
+        currentActiveNodeId = "macro-cosmos";
+        titleEl.textContent = "三千大千世界・華藏世界海";
+        subTitleEl.textContent = "《俱舍論》與《華嚴經》宇宙宏觀尺度網";
+
+        if (tabContainer) tabContainer.style.display = "none";
+        if (diagramBox) diagramBox.style.display = "none";
+
+        metaLifespanEl.textContent = "無量無數大劫 (成住壞空循環不息)";
+        metaDesireEl.textContent = "涵蓋十方微塵剎土一切眾生境界";
+        metaDeitiesEl.textContent = "清淨法身毘盧遮那佛、一佛剎教化釋迦牟尼佛";
+        metaStatusEl.textContent = "一微塵中具足大千・重重無盡事事無礙";
+
+        contentEl.textContent = `【《俱舍論》三千大千世界遞增體系】：\n\n• 小世界（一世界）：以一座須彌山為中心，日月環繞，七金山八海、四大部洲、地獄乃至色界初禪天為一個基礎世界單元。\n\n• 小千世界：以 1,000 個小世界為集合，上覆至色界「二禪天」（光音天等）。\n\n• 中千世界：以 1,000 個小千世界（即 100 萬個小世界）為集合，上覆至色界「三禪天」（遍淨天等）。\n\n• 大千世界（三千大千世界）：以 1,000 個中千世界（即整整 10 億個須彌山小世界）為集合，上覆至色界「四禪天」。因三次千倍遞進乘積，故稱「三千大千世界」。\n\n━━━━━━━━━━━━━━━━━━━━\n【《華嚴經》一微塵中見大千】：\n一尊佛所教化的領土即為一個三千大千世界（一佛剎）。在大乘《華嚴經》「華藏世界品」中，無量無邊的大千世界有如微塵網絡般懸浮於普光香水海之中，一粒微塵內亦含攝十方剎海，一即一切，重重無盡。`;
+
+        panel.classList.add("active");
+
+        // 自動平滑過渡至宏觀大千星系視角 (scale: 0.015)
+        const targetScale = 0.015;
+        const targetTranslateX = window.innerWidth / 2 - 2000 * targetScale;
+        const targetTranslateY = window.innerHeight / 2 - 6000 * targetScale;
+        smoothJumpTo(targetTranslateX, targetTranslateY, targetScale, 1000);
+      }
+
+      /**
+       * 4. 《俱舍論》度量衡與時間即時轉換計算核心
+       */
+      const distInputEl = document.getElementById("dist-input");
+      const distUnitEl = document.getElementById("dist-unit");
+      const distResultEl = document.getElementById("dist-result");
+
+      const timeInputEl = document.getElementById("time-input");
+      const timeUnitEl = document.getElementById("time-unit");
+      const timeResultEl = document.getElementById("time-result");
+
+      // 距離基準：以公尺 (meter) 為基準單位
+      const distanceRatios = {
+        anguli: 0.018229, // 1 指 = 1.82 cm
+        hasta: 0.4375, // 1 肘 = 24 指 = 43.75 cm
+        dhanus: 1.75, // 1 尋 (弓) = 4 肘 = 1.75 m
+        krosa: 1400, // 1 俱盧舍 (拘盧舍) = 800 弓 = 1.4 km
+        yojana: 11200, // 1 由旬 (俱舍論常規大由旬) = 8 俱盧舍 = 11.2 km
+      };
+
+      function calculateDistance() {
+        const val = parseFloat(distInputEl.value) || 0;
+        const unit = distUnitEl.value;
+        const meters = val * distanceRatios[unit];
+
+        const km = meters / 1000;
+        const lightSeconds = meters / 299792458;
+        const earthCircumferenceRatio = (km / 40075).toFixed(3); // 地球赤道周長約 40,075 km
+
+        distResultEl.innerHTML = `
+          • 現代公制：<b>${km.toLocaleString(undefined, { maximumFractionDigits: 3 })}</b> 公里 (km)<br>
+          • 地球對比：約 <b>${earthCircumferenceRatio}</b> 圈地球赤道<br>
+          • 光速傳播：光需行進 <b>${lightSeconds.toFixed(6)}</b> 秒
+        `;
+      }
+
+      // 時間基準：以秒 (second) 為基準單位
+      const timeRatios = {
+        ksana: 0.013333, // 1 剎那 = 1/75 秒 ≈ 0.0133 秒
+        tatksana: 1.6 / 60, // 1 怛剎那 = 120 剎那 ≈ 0.0267 秒
+        lava: 1.6, // 1 臘縛 = 60 怛剎那 = 1.6 秒
+        muhurta: 96, // 1 牟呼栗多 = 30 臘縛 = 48 分鐘 = 2880 秒 (俱舍標準)
+        heavenYear: 365.25 * 86400 * 36500, // 忉利天 1 天年 = 人間 36,500 年 (人間百年為一日夜)
+        antarakalpa: 16798000 * 365.25 * 86400, // 1 中劫 / 小劫 ≈ 1679.8 萬地球年 (增減劫)
+        mahakalpa: 1343840000 * 365.25 * 86400, // 1 大劫 = 80 中劫 ≈ 13.44 億地球年
+      };
+
+      function calculateTime() {
+        const val = parseFloat(timeInputEl.value) || 0;
+        const unit = timeUnitEl.value;
+        const seconds = val * timeRatios[unit];
+
+        const earthYears = seconds / (365.25 * 86400);
+
+        if (earthYears >= 1) {
+          if (earthYears >= 100000000) {
+            const yiYears = (earthYears / 100000000).toFixed(4);
+            timeResultEl.innerHTML = `• 現代時標：約 <b>${yiYears}</b> 億地球年`;
+          } else if (earthYears >= 10000) {
+            const wanYears = (earthYears / 10000).toFixed(2);
+            timeResultEl.innerHTML = `• 現代時標：約 <b>${wanYears}</b> 萬地球年`;
+          } else {
+            timeResultEl.innerHTML = `• 現代時標：約 <b>${earthYears.toLocaleString(undefined, { maximumFractionDigits: 1 })}</b> 地球年`;
+          }
+        } else if (seconds >= 60) {
+          const minutes = (seconds / 60).toFixed(2);
+          const hours = (seconds / 3600).toFixed(3);
+          timeResultEl.innerHTML = `• 現代時標：約 <b>${minutes}</b> 分鐘 (<b>${hours}</b> 小時)`;
+        } else {
+          timeResultEl.innerHTML = `• 現代時標：約 <b>${seconds.toFixed(4)}</b> 秒`;
+        }
+      }
+
+      // 監聽輸入變化
+      distInputEl.addEventListener("input", calculateDistance);
+      distUnitEl.addEventListener("change", calculateDistance);
+      timeInputEl.addEventListener("input", calculateTime);
+      timeUnitEl.addEventListener("change", calculateTime);
+
+      // 初始化計算
+      calculateDistance();
+      calculateTime();
+    </script>
+  </body>
+</html>
