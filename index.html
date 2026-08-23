@@ -193,13 +193,13 @@
           0 0 15px rgba(0, 0, 0, 0.8);
       }
 
-      /* 行動裝置/平板專屬：選單展開/收合開關按鈕 */
+      /* 行動裝置/平板專屬：選單展開/收合開關按鈕 (適配安全區域) */
       #nav-toggle-btn {
         display: none;
         position: fixed;
-        left: 15px;
-        top: 15px;
-        z-index: 105;
+        left: calc(15px + env(safe-area-inset-left, 0px));
+        top: calc(15px + env(safe-area-inset-top, 0px));
+        z-index: 1005;
         background: rgba(20, 15, 12, 0.92);
         border: 1px solid #d4af37;
         color: #f1c40f;
@@ -624,15 +624,15 @@
         border: none !important;
       }
 
-      /* 右下角視角控制器 */
+      /* 右下角視角控制器 (適配手機底部與側邊安全區域) */
       #view-controls {
         position: fixed;
-        right: 20px;
-        bottom: 20px;
+        right: calc(20px + env(safe-area-inset-right, 0px));
+        bottom: calc(20px + env(safe-area-inset-bottom, 0px));
         display: flex;
         flex-direction: column;
         gap: 8px;
-        z-index: 100;
+        z-index: 1005;
       }
       .ctrl-btn {
         width: 42px;
@@ -640,7 +640,7 @@
         background: rgba(20, 15, 12, 0.85);
         border: 1px solid #8b5a2b;
         color: #d4af37;
-        font-size: 16px;
+        font-size: 18px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -662,19 +662,24 @@
           display: block; /* 顯示手機端開關按鈕 */
         }
         #quick-nav {
-          left: 10px;
-          top: 60px;
+          left: calc(10px + env(safe-area-inset-left, 0px));
+          top: calc(65px + env(safe-area-inset-top, 0px));
           width: calc(100vw - 40px);
           max-width: 320px;
-          max-height: 75vh;
+          max-height: 70vh;
           transform: translateY(-20px);
           opacity: 0;
           pointer-events: none;
+          z-index: 1000;
         }
         #quick-nav.open {
           transform: translateY(0);
           opacity: 1;
           pointer-events: auto;
+        }
+        #view-controls {
+          right: calc(15px + env(safe-area-inset-right, 0px));
+          bottom: calc(30px + env(safe-area-inset-bottom, 0px));
         }
         #info-panel {
           width: 100vw;
