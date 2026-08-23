@@ -697,18 +697,14 @@
         width: 100vw;
         height: 100vh;
         height: 100dvh;
-        background-color: #060411;
-        background-image:
+        background:
           radial-gradient(
             circle at 50% 50%,
-            transparent 60%,
-            rgba(6, 4, 17, 0.85) 90%,
-            #060411 100%
+            rgba(6, 4, 17, 0.15) 0%,
+            rgba(6, 4, 17, 0.65) 80%,
+            rgba(6, 4, 17, 0.92) 100%
           ),
-          url("./cover.png");
-        background-repeat: no-repeat;
-        background-position: center center;
-        background-size: contain;
+          url("./cover.png") no-repeat center center / cover #060411;
         z-index: 99999;
         display: flex;
         flex-direction: column;
