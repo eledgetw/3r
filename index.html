@@ -761,9 +761,10 @@
           width: 100vw;
           padding: 25px 20px;
           right: -100vw;
+          transition: right 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
         #info-panel.active {
-          right: 0;
+          right: 0 !important;
         }
       }
     </style>
@@ -1057,7 +1058,16 @@
       <div
         class="nav-item"
         id="qa-nav-btn"
-        style="margin-top: 10px; background: rgba(52, 152, 219, 0.2); border: 1px solid #3498db; color: #a9d4f7; font-weight: bold; text-align: center; letter-spacing: 1.5px; box-shadow: 0 0 10px rgba(52, 152, 219, 0.35);"
+        style="
+          margin-top: 10px;
+          background: rgba(52, 152, 219, 0.2);
+          border: 1px solid #3498db;
+          color: #a9d4f7;
+          font-weight: bold;
+          text-align: center;
+          letter-spacing: 1.5px;
+          box-shadow: 0 0 10px rgba(52, 152, 219, 0.35);
+        "
         onclick="openQAPanel(event)"
       >
         💡 佛教徒常見 Q&A
@@ -1461,7 +1471,8 @@
               lifespan: "一萬六千大劫 (身量一萬六千由旬)",
               desire: "物質色法之究竟盡處・純修大乘法身無漏慧",
               deities: "盧舍那佛、十地法身大士、摩醯首羅天王、大阿羅漢",
-              status: "器世間極頂・三果斷盡一切惑證阿羅漢 / 十地菩薩於此受職成佛",
+              status:
+                "器世間極頂・三果斷盡一切惑證阿羅漢 / 十地菩薩於此受職成佛",
               description:
                 "【三界物質之頂】：梵名阿迦膩吒，為一切物質（色法）器世間之最頂層，其上即為純心識之無色界。\n\n【大乘深義】：報身佛（圓滿報身盧舍那佛）常於此天摩醯首羅天宮顯現萬德莊嚴法身，為十地大菩薩宣說深妙法；三果阿那含聖者於此斷盡一切微細俱生我執，證阿羅漢果直入無餘涅槃；菩薩行者亦於此天受佛職位，直趣無上佛果。",
             },
@@ -1698,7 +1709,8 @@
               subtitle: "一生補處菩薩所居・超脫輪迴之不退轉淨土",
               lifespan: "隨願往生・直至成佛・圓證三不退",
               desire: "斷盡欲界煩惱・純受大乘微妙法喜法樂",
-              deities: "彌勒菩薩 (慈氏如來補處)、窺基大師、玄奘大師、虛雲老和尚",
+              deities:
+                "彌勒菩薩 (慈氏如來補處)、窺基大師、玄奘大師、虛雲老和尚",
               status: "出離生死輪迴・大乘佛子往生求道之樞紐",
               description:
                 "【內院莊嚴格局】（出處：《佛說觀彌勒菩薩上生兜率天經》）：\n• 摩尼寶殿：彌勒菩薩居於四十九重微妙寶宮之中，殿堂由無量摩尼寶珠、金剛琉璃化成，五百億光明交錯照耀，蓮花法座上有無量天女演奏無上梵音。\n• 說法盛會：彌勒菩薩頂戴寶冠，日夜宣說「不退轉地法輪」及「唯識深密法門」，十方世界諸大菩薩與發心求道者皆會聚於此聽受正法。\n\n【歷代聖僧往生發願】（出處：《大唐西域記》、《高僧傳》）：\n東晉道安大師、唐代玄奘大師、窺基大師、近代虛雲老和尚與印光大師等，皆以深切誓願求生兜率內院，親近彌勒慈尊，待未來隨佛下生娑婆廣度有情。",
@@ -2322,9 +2334,9 @@
         } else if (node.id === "form-realm-common") {
           node.details.lifespan =
             "半中劫（梵眾天）至 500 大劫（廣果天 / 無想天）";
-          node.details.desire = "永斷男女情愛與粗重食睡之欲，純受微細禪悅與光明意樂";
-          node.details.deities =
-            "大梵天王、光音天人、遍淨天人、廣果天人";
+          node.details.desire =
+            "永斷男女情愛與粗重食睡之欲，純受微細禪悅與光明意樂";
+          node.details.deities = "大梵天王、光音天人、遍淨天人、廣果天人";
           node.details.status =
             "凡夫有漏世間定極致・禪定力盡與天福享盡後仍隨宿業退轉輪迴";
         } else if (node.id === "form-realm-pure") {
@@ -2873,7 +2885,10 @@
               to: "pure-land",
               effect: "修三十七道品・念佛修慧・出離六道證四聖果",
             },
-            { to: "form-realm-common", effect: "修清淨梵行世間禪定・命終生色界禪天" },
+            {
+              to: "form-realm-common",
+              effect: "修清淨梵行世間禪定・命終生色界禪天",
+            },
             {
               to: "trayastrimsa",
               effect: "修十善業・受持五戒・造大福德命終生天",
@@ -3399,7 +3414,8 @@
               tabContainer.appendChild(btn);
             });
           } else if (
-            (node.id === "form-realm-common" || node.id === "form-realm-pure") &&
+            (node.id === "form-realm-common" ||
+              node.id === "form-realm-pure") &&
             node.formDivisions
           ) {
             tabContainer.innerHTML = "";
@@ -3696,99 +3712,99 @@
                 document
                   .querySelectorAll(".continent-tab-btn")
                   .forEach((b) => b.classList.remove("active-tab"));
-              btn.classList.add("active-tab");
-
-              if (diagramBox) diagramBox.style.display = "none";
-
-              titleEl.textContent = div.name;
-              subTitleEl.textContent = div.subtitle;
-              metaLifespanEl.textContent = div.lifespan;
-              metaDesireEl.textContent = div.desire;
-              metaDeitiesEl.textContent = div.deities;
-              metaStatusEl.textContent = div.status;
-              contentEl.textContent = div.description;
-            });
-            tabContainer.appendChild(btn);
-          });
-        } else if (node.id === "human-realm") {
-          tabContainer.innerHTML = "";
-          tabContainer.style.display = "flex";
-
-          const seaBtn = document.createElement("button");
-          seaBtn.className = "continent-tab-btn";
-          seaBtn.textContent = "🌊 九山八海全圖";
-          seaBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            if (seaBtn.classList.contains("active-tab")) {
-              resetToParentNodeView();
-              return;
-            }
-            document
-              .querySelectorAll(".continent-tab-btn")
-              .forEach((b) => b.classList.remove("active-tab"));
-            seaBtn.classList.add("active-tab");
-
-            if (videoBox) videoBox.style.display = "none";
-            if (videoPlayer) videoPlayer.pause();
-
-            renderNineMountainsSvg();
-
-            titleEl.textContent = "九山八海・七金山";
-            subTitleEl.textContent =
-              "【結構】：由內至外重重環繞之同心階梯山海格局";
-            metaLifespanEl.textContent = "器世間成壞四劫（一中劫住劫）";
-            metaDesireEl.textContent = "水陸各類地居與水居眾生依止所";
-            metaDeitiesEl.textContent =
-              "四大天王護法善神、娑竭羅龍王、大海阿修羅";
-            metaStatusEl.textContent = "世界安立根基・最外圍由大鐵圍山包覆";
-
-            let mountainHtml = "【《俱舍論》九山八海階梯同心展開】：\n\n";
-            nineMountainsEightSeasData.forEach((item, index) => {
-              mountainHtml += `${index + 1}. [${item.type}] ${item.name} (${item.height || item.width})\n   ↳ ${item.desc}\n\n`;
-            });
-            contentEl.textContent = mountainHtml;
-          });
-          tabContainer.appendChild(seaBtn);
-
-          if (node.continents && node.continents.length > 0) {
-            node.continents.forEach((cont) => {
-              const btn = document.createElement("button");
-              btn.className = "continent-tab-btn";
-              btn.textContent = cont.name.split(" ")[0];
-              btn.addEventListener("click", (e) => {
-                e.stopPropagation();
-                if (btn.classList.contains("active-tab")) {
-                  resetToParentNodeView();
-                  return;
-                }
-                document
-                  .querySelectorAll(".continent-tab-btn")
-                  .forEach((b) => b.classList.remove("active-tab"));
                 btn.classList.add("active-tab");
 
                 if (diagramBox) diagramBox.style.display = "none";
 
-                // 播放對應部洲影片
-                if (cont.videoSrc && videoBox && videoPlayer) {
-                  videoPlayer.src = cont.videoSrc;
-                  videoBox.style.display = "block";
-                  videoPlayer.play().catch(() => {});
-                } else if (videoBox) {
-                  videoBox.style.display = "none";
-                }
-
-                titleEl.textContent = cont.name;
-                subTitleEl.textContent = `【外形】：${cont.shape}`;
-                metaLifespanEl.textContent = cont.lifespan;
-                metaDesireEl.textContent = cont.desire;
-                metaDeitiesEl.textContent = cont.deities;
-                metaStatusEl.textContent = cont.status;
-                contentEl.textContent = `${cont.description}\n\n【附屬島嶼】：${cont.subIslands}`;
+                titleEl.textContent = div.name;
+                subTitleEl.textContent = div.subtitle;
+                metaLifespanEl.textContent = div.lifespan;
+                metaDesireEl.textContent = div.desire;
+                metaDeitiesEl.textContent = div.deities;
+                metaStatusEl.textContent = div.status;
+                contentEl.textContent = div.description;
               });
               tabContainer.appendChild(btn);
             });
-          }
-        } else {
+          } else if (node.id === "human-realm") {
+            tabContainer.innerHTML = "";
+            tabContainer.style.display = "flex";
+
+            const seaBtn = document.createElement("button");
+            seaBtn.className = "continent-tab-btn";
+            seaBtn.textContent = "🌊 九山八海全圖";
+            seaBtn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              if (seaBtn.classList.contains("active-tab")) {
+                resetToParentNodeView();
+                return;
+              }
+              document
+                .querySelectorAll(".continent-tab-btn")
+                .forEach((b) => b.classList.remove("active-tab"));
+              seaBtn.classList.add("active-tab");
+
+              if (videoBox) videoBox.style.display = "none";
+              if (videoPlayer) videoPlayer.pause();
+
+              renderNineMountainsSvg();
+
+              titleEl.textContent = "九山八海・七金山";
+              subTitleEl.textContent =
+                "【結構】：由內至外重重環繞之同心階梯山海格局";
+              metaLifespanEl.textContent = "器世間成壞四劫（一中劫住劫）";
+              metaDesireEl.textContent = "水陸各類地居與水居眾生依止所";
+              metaDeitiesEl.textContent =
+                "四大天王護法善神、娑竭羅龍王、大海阿修羅";
+              metaStatusEl.textContent = "世界安立根基・最外圍由大鐵圍山包覆";
+
+              let mountainHtml = "【《俱舍論》九山八海階梯同心展開】：\n\n";
+              nineMountainsEightSeasData.forEach((item, index) => {
+                mountainHtml += `${index + 1}. [${item.type}] ${item.name} (${item.height || item.width})\n   ↳ ${item.desc}\n\n`;
+              });
+              contentEl.textContent = mountainHtml;
+            });
+            tabContainer.appendChild(seaBtn);
+
+            if (node.continents && node.continents.length > 0) {
+              node.continents.forEach((cont) => {
+                const btn = document.createElement("button");
+                btn.className = "continent-tab-btn";
+                btn.textContent = cont.name.split(" ")[0];
+                btn.addEventListener("click", (e) => {
+                  e.stopPropagation();
+                  if (btn.classList.contains("active-tab")) {
+                    resetToParentNodeView();
+                    return;
+                  }
+                  document
+                    .querySelectorAll(".continent-tab-btn")
+                    .forEach((b) => b.classList.remove("active-tab"));
+                  btn.classList.add("active-tab");
+
+                  if (diagramBox) diagramBox.style.display = "none";
+
+                  // 播放對應部洲影片
+                  if (cont.videoSrc && videoBox && videoPlayer) {
+                    videoPlayer.src = cont.videoSrc;
+                    videoBox.style.display = "block";
+                    videoPlayer.play().catch(() => {});
+                  } else if (videoBox) {
+                    videoBox.style.display = "none";
+                  }
+
+                  titleEl.textContent = cont.name;
+                  subTitleEl.textContent = `【外形】：${cont.shape}`;
+                  metaLifespanEl.textContent = cont.lifespan;
+                  metaDesireEl.textContent = cont.desire;
+                  metaDeitiesEl.textContent = cont.deities;
+                  metaStatusEl.textContent = cont.status;
+                  contentEl.textContent = `${cont.description}\n\n【附屬島嶼】：${cont.subIslands}`;
+                });
+                tabContainer.appendChild(btn);
+              });
+            }
+          } else {
             tabContainer.style.display = "none";
             if (diagramBox) diagramBox.style.display = "none";
             if (videoBox) videoBox.style.display = "none";
@@ -3802,96 +3818,105 @@
       const faqData = [
         {
           q: "1. 關聖帝君（關公）與天上聖母（媽祖）在佛教宇宙觀中居於哪一天？",
-          a: "在漢傳佛教護法神體系中，民間忠孝大德死後多轉生為欲界天人或地居善神。關公被隋代智者大師度化，尊為護法「伽藍菩薩」；媽祖救難利生，常被視為忉利天善神或觀世音菩薩的大悲化身。"
+          a: "在漢傳佛教護法神體系中，民間忠孝大德死後多轉生為欲界天人或地居善神。關公被隋代智者大師度化，尊為護法「伽藍菩薩」；媽祖救難利生，常被視為忉利天善神或觀世音菩薩的大悲化身。",
         },
         {
           q: "2. 台灣民間常拜的「天公（玉皇大帝）」在佛教宇宙中是誰、住在哪裡？",
-          a: "即欲界第二天「忉利天」之主——釋提桓因（帝釋天），居於須彌山頂的「善見城」，統領須彌山頂三十二天城與人間善惡巡查。"
+          a: "即欲界第二天「忉利天」之主——釋提桓因（帝釋天），居於須彌山頂的「善見城」，統領須彌山頂三十二天城與人間善惡巡查。",
         },
         {
           q: "3. 廟宇參拜時為什麼要先轉身向外拜「天公爐」？",
-          a: "象徵先向欲界天主、天地護法神祇致敬，感謝其守護國土世間風調雨順、護衛道場安寧，隨後再入內禮拜主尊。"
+          a: "象徵先向欲界天主、天地護法神祇致敬，感謝其守護國土世間風調雨順、護衛道場安寧，隨後再入內禮拜主尊。",
         },
         {
-          q: "4. 常聽到的「南天門」在佛教宇宙的哪裡？",
-          a: "為須彌山頂忉利天善見城四方城門之一的南門，正對著下方大鹹海中的「南瞻部洲（閻浮提・人類世界）」。"
+          q: "4. 民間到處可見的「土地公（福德正神）」在三界六道中算哪一道？",
+          a: "【六道歸屬】：依《俱舍論》與《正法念處經》劃分，土地公主要屬於「鬼道」中的上品——「多財鬼（具福德的大力鬼神 / 勢力鬼）」。生前多為樂善好施、急公好義、厚道正直之鄉紳長者，死後因善業福報受生為守護神，居於廟祠或土地中享世俗香火供養，不受飢渴之苦。\n【空間與神職】：不住在虛空中的空居天，而是依附於南瞻部洲（人間）田野、村落的「地居善神」。在《地藏菩薩本願經・地神護法品》體系中受「堅牢地神」與「四大天王」統轄，負責保佑一方水土、五穀豐登與行善修道之人。",
         },
         {
-          q: "5. 寺廟門口威武的「四大金剛 / 魔家四將」到底是什麼神？",
-          a: "居於須彌山腰犍陀羅山的「四大天王」（持國、增長、廣目、多聞），手持劍、琴、傘、龍，合表民間「風調雨順」。"
+          q: "5. 掌管陰陽司法的「城隍爺」在三界六道中算哪一道？",
+          a: "【六道歸屬】：與土地公相同，六道中主要屬於「鬼道」中的上品——「多財鬼（勢力鬼）」。生前多為剛正不阿、清廉愛民或護城殉職之忠臣清官，死後感召極大善果與威德，受生為具備大神通、威德的大力鬼王，居住在城池宮殿中受人間香火與官民祭祀。\n【空間與神職】：屬於南瞻部洲城池的「地居護法神」，職責上作為人間世俗與地下「閻魔王界（地獄道）」的司法橋樑，負責記錄轄區眾生善惡功過簿冊、緝拿引渡亡魂，並受地藏菩薩與閻羅王的節制與指引。",
         },
         {
-          q: "6. 廟裡的「韋馱菩薩」為什麼常站在天王殿後面，他是誰的部下？",
-          a: "是四大天王中「南方增長天王」麾下的首席三十二天將之一，專職於南瞻部洲巡護僧伽、守護佛法正道。"
+          q: "6. 常聽到的「南天門」在佛教宇宙的哪裡？",
+          a: "為須彌山頂忉利天善見城四方城門之一的南門，正對著下方大鹹海中的「南瞻部洲（閻浮提・人類世界）」。",
         },
         {
-          q: "7. 民間拜的「土地公、城隍爺、山神、樹神」在三界六道中算哪一道？",
-          a: "在六道中多歸於「鬼道」中的上品「多財鬼（勢力鬼）」或依附於山川草木的地居善神，享有世俗香火祭祀與威德神力。"
+          q: "7. 寺廟門口威武的「四大金剛 / 魔家四將」到底是什麼神？",
+          a: "居於須彌山腰犍陀羅山的「四大天王」（持國、增長、廣目、多聞），手持劍、琴、傘、龍，合表民間「風調雨順」。",
         },
         {
-          q: "8. 《封神演義》中哪吒鬧東海、抽龍筋的「龍宮」在宇宙的哪裡？",
-          a: "位於須彌山外圍「第八・大鹹水海」深處，為娑竭羅龍王等海居龍族依止之水府宮殿。"
+          q: "8. 廟裡的「韋馱菩薩」為什麼常站在天王殿後面，他是誰的部下？",
+          a: "是四大天王中「南方增長天王」麾下的首席三十二天將之一，專職於南瞻部洲巡護僧伽、守護佛法正道。",
         },
         {
-          q: "9. 《西遊記》中孫悟空大鬧天宮、打翻太上老君煉丹爐發生在哪一天？",
-          a: "神話描寫之天宮即須彌山頂「忉利天宮（善見城與三十三天園林）」之範疇。"
+          q: "9. 《封神演義》中哪吒鬧東海、抽龍筋的「龍宮」在宇宙的哪裡？",
+          a: "位於須彌山外圍「第八・大鹹水海」深處，為娑竭羅龍王等海居龍族依止之水府宮殿。",
         },
         {
-          q: "10. 孫悟空一個踅身翻出的「十萬八千里筋斗雲」，在須彌山尺度有多大？",
-          a: "十萬八千里約合佛教度量衡 10 由旬左右，連須彌山高度（八萬由旬）的千分之一都不到，在宇宙尺度中僅是一微塵跳躍。"
+          q: "10. 《西遊記》中孫悟空大鬧天宮、打翻太上老君煉丹爐發生在哪一天？",
+          a: "神話描寫之天宮即須彌山頂「忉利天宮（善見城與三十三天園林）」之範疇。",
         },
         {
-          q: "11. 《白蛇傳》中白素貞盜取的「靈芝仙草」所在的崑崙仙山在哪裡？",
-          a: "在佛教宇宙觀中，對應人間與地居天交界的仙境（如七金山或阿耨達池雪山聖境）。"
+          q: "11. 孫悟空一個踅身翻出的「十萬八千里筋斗雲」，在須彌山尺度有多大？",
+          a: "十萬八千里約合佛教度量衡 10 由旬左右，連須彌山高度（八萬由旬）的千分之一都不到，在宇宙尺度中僅是一微塵跳躍。",
         },
         {
-          q: "12. 牛郎與織女相隔的「銀河」，在佛教宇宙觀中是什麼？",
-          a: "為日月星辰繞行須彌山腰運轉時，虛空中星宿軌道所凝聚之浩瀚光帶與雲海。"
+          q: "12. 《白蛇傳》中白素貞盜取的「靈芝仙草」所在的崑崙仙山在哪裡？",
+          a: "在佛教宇宙觀中，對應人間與地居天交界的仙境（如七金山或阿耨達池雪山聖境）。",
         },
         {
-          q: "13. 我們現在生活的人類地球，在佛教宇宙中叫什麼名字？",
-          a: "位於須彌山南方鹹海之中、形如梯形的「南瞻部洲（閻浮提）」，為三世諸佛示現成道之唯一洲土。"
+          q: "13. 牛郎與織女相隔的「銀河」，在佛教宇宙觀中是什麼？",
+          a: "為日月星辰繞行須彌山腰運轉時，虛空中星宿軌道所凝聚之浩瀚光帶與雲海。",
         },
         {
-          q: "14. 民間傳說人死後要走「黃泉路、奈何橋、望鄉台」，在宇宙的哪裡？",
-          a: "位於南瞻部洲地下五百由旬的「閻魔王界」以及地獄道入口之各類副獄（遊增地獄）。"
+          q: "14. 我們現在生活的人類地球，在佛教宇宙中叫什麼名字？",
+          a: "位於須彌山南方鹹海之中、形如梯形的「南瞻部洲（閻浮提）」，為三世諸佛示現成道之唯一洲土。",
         },
         {
-          q: "15. 「十八層地獄」跟佛教經典講的地獄是一樣的嗎？",
-          a: "民間「十八層地獄」融合了佛經中的「八根本熱地獄、八根本寒地獄」以及十六遊增副獄、孤獨地獄等多重刑罰格局。"
+          q: "15. 民間傳說人死後要走「黃泉路、奈何橋、望鄉台」，在宇宙的哪裡？",
+          a: "位於南瞻部洲地下五百由旬的「閻魔王界」以及地獄道入口之各類副獄（遊增地獄）。",
         },
         {
-          q: "16. 中元普渡拜的「好兄弟、焦面大士（普渡公）」是什麼來歷？",
-          a: "「好兄弟」為餓鬼道中常受飢渴焚身的焰口鬼眾；「焦面大士」則是觀世音菩薩為降伏鬼眾而化現之威嚴忿怒身。"
+          q: "16. 「十八層地獄」跟佛教經典講的地獄是一樣的嗎？",
+          a: "民間「十八層地獄」融合了佛經中的「八根本熱地獄、八根本寒地獄」以及十六遊增副獄、孤獨地獄等多重刑罰格局。",
         },
         {
-          q: "17. 一般長輩常說往生去「西方極樂世界」，它在三界之內嗎？",
-          a: "不在三界之內。西方極樂世界是阿彌陀佛大願所成就的出三界「四聖法界・清淨佛土」，橫超生死輪迴。"
+          q: "17. 中元普渡拜的「好兄弟、焦面大士（普渡公）」是什麼來歷？",
+          a: "「好兄弟」為餓鬼道中常受飢渴焚身的焰口鬼眾；「焦面大士」則是觀世音菩薩為降伏鬼眾而化現之威嚴忿怒身。",
         },
         {
-          q: "18. 為什麼古代玄奘大師、虛雲老和尚發願去「兜率天」而不是西方極樂？",
-          a: "因發願親近一生補處彌勒菩薩於「兜率內院」聽法修持，待未來隨同彌勒下生娑婆人間、龍華三會廣度有情。"
+          q: "18. 一般長輩常說往生去「西方極樂世界」，它在三界之內嗎？",
+          a: "不在三界之內。西方極樂世界是阿彌陀佛大願所成就的出三界「四聖法界・清淨佛土」，橫超生死輪迴。",
         },
         {
-          q: "19. 常聽人說「修羅場」，「阿修羅」到底算神仙還是惡魔？",
-          a: "屬於六道之一（非天），享有如天人般的廣大福報與神力，但因嗔恨嫉妒、好勝鬥狠，常年與帝釋天大戰。"
+          q: "19. 為什麼古代玄奘大師、虛雲老和尚發願去「兜率天」而不是西方極樂？",
+          a: "因發願親近一生補處彌勒菩薩於「兜率內院」聽法修持，待未來隨同彌勒下生娑婆人間、龍華三會廣度有情。",
         },
         {
-          q: "20. 傳說中的「天上一天，人間百年」是真的嗎？時間是怎麼換算的？",
-          a: "千真萬確。欲界第二天忉利天以人間 100 年為一日夜，天壽 1000 歲即相當於地球人間約 3,600 萬年。"
-        }
+          q: "20. 常聽人說「修羅場」，「阿修羅」到底算神仙還是惡魔？",
+          a: "屬於六道之一（非天），享有如天人般的廣大福報與神力，但因嗔恨嫉妒、好勝鬥狠，常年與帝釋天大戰。",
+        },
+        {
+          q: "21. 傳說中的「天上一天，人間百年」是真的嗎？時間是怎麼換算的？",
+          a: "千真萬確。欲界第二天忉利天以人間 100 年為一日夜，天壽 1000 歲即相當於地球人間約 3,600 萬年。",
+        },
       ];
 
       function openQAPanel(e) {
         if (e) e.stopPropagation();
 
-        if (window.innerWidth <= 768) {
-          document.getElementById("quick-nav").classList.remove("open");
+        // 手機端點擊後立即收起左側目錄選單
+        const quickNav = document.getElementById("quick-nav");
+        if (quickNav) {
+          quickNav.classList.remove("open");
         }
 
-        // 清除地圖選中高亮
-        document.querySelectorAll("#quick-nav .nav-item").forEach(item => item.classList.remove("active-node"));
-        document.getElementById("qa-nav-btn").classList.add("active-node");
+        // 清除地圖選中高亮並聚焦 Q&A 按鈕
+        document
+          .querySelectorAll("#quick-nav .nav-item")
+          .forEach((item) => item.classList.remove("active-node"));
+        const qaBtn = document.getElementById("qa-nav-btn");
+        if (qaBtn) qaBtn.classList.add("active-node");
 
         const tabContainer = document.getElementById("continent-tab-container");
         const diagramBox = document.getElementById("diagram-box");
@@ -3926,6 +3951,7 @@
         qaHtml += `</div>`;
 
         contentEl.innerHTML = qaHtml;
+        panel.scrollTop = 0;
         panel.classList.add("active");
         setVignetteFocus(true);
       }
@@ -4276,9 +4302,15 @@
       viewport.addEventListener("mousedown", (e) => {
         if (e.button !== 0 && e.button !== 2) return;
         // 左鍵點擊在控制面板與導覽列時不拖曳；右鍵則除右側開啟的詳細面板外，點擊任何影片/圖片皆可直接拖動
-        if (e.target.closest("#info-panel") || e.target.closest("#quick-nav") || e.target.closest("#view-controls")) return;
-        if (e.button === 0 && e.target !== viewport && e.target !== canvas) return;
-        
+        if (
+          e.target.closest("#info-panel") ||
+          e.target.closest("#quick-nav") ||
+          e.target.closest("#view-controls")
+        )
+          return;
+        if (e.button === 0 && e.target !== viewport && e.target !== canvas)
+          return;
+
         isDragging = true;
         startX = e.clientX - translateX;
         startY = e.clientY - translateY;
