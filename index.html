@@ -431,11 +431,11 @@
 
       /* 佛教徒常見 Q&A 緊湊條列式連結樣式 */
       .qa-item-box {
-        margin-bottom: 0;
+        margin: 0;
         background: transparent;
         border: none;
         border-bottom: 1px solid rgba(52, 152, 219, 0.2);
-        padding: 6px 0;
+        padding: 0;
         transition: all 0.2s ease;
       }
       .qa-item-box:hover {
@@ -443,24 +443,24 @@
       }
       .qa-question-btn {
         width: 100%;
-        padding: 8px 4px;
+        padding: 8px 2px;
         background: transparent;
         border: none;
         color: #a9d4f7;
-        font-size: 24px;
+        font-size: 22px;
         font-weight: 500;
         text-align: left;
         cursor: pointer;
         display: flex;
         justify-content: space-between;
-        align-items: flex-start;
-        line-height: 1.5;
+        align-items: center;
+        line-height: 1.35;
         outline: none;
         transition: color 0.2s ease;
+        box-sizing: border-box;
       }
       .qa-question-btn:hover {
         color: #ffffff;
-        text-decoration: underline;
       }
       .qa-item-box.expanded .qa-question-btn {
         color: #f1c40f;
@@ -468,20 +468,20 @@
       }
       .qa-answer-content {
         display: none;
-        padding: 8px 10px 14px 10px;
+        padding: 6px 10px 10px 10px;
         color: #e0d8c8;
-        font-size: 23px;
-        line-height: 1.75;
+        font-size: 20px;
+        line-height: 1.6;
         background: rgba(0, 0, 0, 0.25);
         border-left: 3px solid #f1c40f;
-        margin: 6px 0 8px 0;
+        margin: 2px 0 6px 0;
         border-radius: 0 4px 4px 0;
+        white-space: normal;
       }
       .qa-arrow {
         color: #5dade2;
-        font-size: 11px;
+        font-size: 13px;
         margin-left: 8px;
-        margin-top: 3px;
         flex-shrink: 0;
         transition: transform 0.2s ease;
       }
@@ -4016,6 +4016,8 @@
         });
         qaHtml += `</div>`;
 
+        contentEl.style.whiteSpace = "normal";
+        contentEl.style.lineHeight = "normal";
         contentEl.innerHTML = qaHtml;
         panel.scrollTop = 0;
         panel.classList.add("active");
