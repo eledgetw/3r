@@ -2697,6 +2697,16 @@
         });
 
         if (closestNode) {
+          // 【效能優化核心】：若當前最接近的節點未改變，且音效狀態未改變，則跳過所有 DOM 查詢與影片操作。避免 iPad 上 touchmove 觸發 60FPS 的高頻運算，防止媒體線程卡死。
+          if (window.lastClosestNodeId === closestNode.id && 
+              window.lastUserMuted === isUserMuted && 
+              window.lastAudioUnlocked === isAudioUnlocked) {
+            return;
+          }
+          window.lastClosestNodeId = closestNode.id;
+          window.lastUserMuted = isUserMuted;
+          window.lastAudioUnlocked = isAudioUnlocked;
+
           const navItems = document.querySelectorAll("#quick-nav .nav-item");
           navItems.forEach((item) => {
             if (item.getAttribute("data-node-id") === closestNode.id) {
@@ -2725,7 +2735,7 @@
             } else {
               if (!sumeruVid.paused) {
                 sumeruVid.pause();
-                sumeruVid.currentTime = 0;
+                try { sumeruVid.currentTime = 0; } catch(e) {}
               }
             }
           }
@@ -2754,7 +2764,7 @@
             } else {
               if (!vid.paused) {
                 vid.pause();
-                vid.currentTime = 0;
+                try { vid.currentTime = 0; } catch(e) {}
               }
             }
           });
