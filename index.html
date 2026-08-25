@@ -657,10 +657,10 @@
         color: white;
       }
 
-      /* 現代水平頂部標題排版 */
+      /* 現代水平頂部標題排版 (預設放大 1 倍) */
       #panel-title {
         writing-mode: horizontal-tb;
-        font-size: 26px;
+        font-size: 40px;
         color: #d4af37;
         letter-spacing: 2px;
         float: none;
@@ -675,7 +675,7 @@
 
       #panel-subtitle {
         color: #c97a7e;
-        font-size: 15px;
+        font-size: 26px;
         margin-top: 0;
         margin-bottom: 15px;
         border-bottom: 1px dashed #4a3b32;
@@ -693,8 +693,8 @@
         gap: 8px;
       }
       .meta-item {
-        font-size: 14px;
-        line-height: 1.5;
+        font-size: 24px;
+        line-height: 1.6;
       }
       .meta-label {
         color: #d4af37;
@@ -1074,15 +1074,20 @@
         地獄道 (八熱八寒・無間)
       </div>
 
-      <!-- 佛教徒常見 Q&A 專欄 -->
-      <button
+      <!-- 佛教徒常見 Q&A 專欄 (整顆按鈕全區塊 100% 觸發) -->
+      <div
         class="nav-item"
         id="qa-nav-btn"
-        type="button"
         style="
+          display: flex;
+          align-items: center;
+          justify-content: center;
           width: 100%;
+          min-height: 44px;
           margin-top: 10px;
-          background: rgba(52, 152, 219, 0.25);
+          margin-left: 0 !important;
+          padding: 10px 0;
+          background: rgba(52, 152, 219, 0.28);
           border: 1px solid #3498db;
           color: #a9d4f7;
           font-weight: bold;
@@ -1097,10 +1102,8 @@
         "
         onclick="openQAPanel(event)"
       >
-        <span style="pointer-events: none; display: block"
-          >💡 佛教徒常見 Q&A</span
-        >
-      </button>
+        💡 佛教徒常見 Q&A
+      </div>
     </div>
 
     <div id="viewport">
@@ -4037,16 +4040,16 @@
         smoothJumpTo(targetTranslateX, targetTranslateY, targetScale, 600);
       }
 
-      // 說明欄文字大小動態調節 (避免切字與單指無法滾動問題)
+      // 說明欄文字大小動態調節 (預設字級已放大 1 倍)
       let currentFontOffset = 0;
 
       function updatePanelFontSizes() {
-        const baseContentSize = 15;
-        const baseMetaSize = 14;
-        const baseSubSize = 15;
-        const baseTitleSize = 24;
-        const baseQaQuestionSize = 14;
-        const baseQaAnswerSize = 13.5;
+        const baseContentSize = 26;
+        const baseMetaSize = 24;
+        const baseSubSize = 26;
+        const baseTitleSize = 40;
+        const baseQaQuestionSize = 24;
+        const baseQaAnswerSize = 23;
 
         if (contentEl)
           contentEl.style.fontSize = `${baseContentSize + currentFontOffset}px`;
@@ -4067,6 +4070,36 @@
           el.style.fontSize = `${baseQaAnswerSize + currentFontOffset}px`;
         });
       }
+
+      // 監聽並確保 Q&A 按鈕任何位置點擊皆能立即跳轉
+      document.addEventListener("DOMContentLoaded", () => {
+        const qaBtn = document.getElementById("qa-nav-btn");
+        if (qaBtn) {
+          const handleQAClick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openQAPanel(e);
+          };
+          qaBtn.addEventListener("click", handleQAClick);
+          qaBtn.addEventListener("pointerdown", (e) => e.stopPropagation());
+          qaBtn.addEventListener("touchend", handleQAClick);
+        }
+      });
+
+      // 監聽並確保 Q&A 按鈕任何位置點擊皆能立即跳轉
+      document.addEventListener("DOMContentLoaded", () => {
+        const qaBtn = document.getElementById("qa-nav-btn");
+        if (qaBtn) {
+          const handleQAClick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openQAPanel(e);
+          };
+          qaBtn.addEventListener("click", handleQAClick);
+          qaBtn.addEventListener("pointerdown", (e) => e.stopPropagation());
+          qaBtn.addEventListener("touchend", handleQAClick);
+        }
+      });
 
       function adjustPanelFontSize(delta) {
         currentFontOffset = Math.max(
