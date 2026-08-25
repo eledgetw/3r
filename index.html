@@ -443,11 +443,11 @@
       }
       .qa-question-btn {
         width: 100%;
-        padding: 6px 4px;
+        padding: 8px 4px;
         background: transparent;
         border: none;
         color: #a9d4f7;
-        font-size: 14px;
+        font-size: 24px;
         font-weight: 500;
         text-align: left;
         cursor: pointer;
@@ -468,13 +468,13 @@
       }
       .qa-answer-content {
         display: none;
-        padding: 6px 8px 10px 8px;
+        padding: 8px 10px 14px 10px;
         color: #e0d8c8;
-        font-size: 13.5px;
-        line-height: 1.7;
+        font-size: 23px;
+        line-height: 1.75;
         background: rgba(0, 0, 0, 0.25);
-        border-left: 2px solid #f1c40f;
-        margin: 4px 0 6px 0;
+        border-left: 3px solid #f1c40f;
+        margin: 6px 0 8px 0;
         border-radius: 0 4px 4px 0;
       }
       .qa-arrow {
@@ -495,55 +495,55 @@
 
       /* 《俱舍論》古典計量單位轉換器樣式 */
       #unit-converter-box {
-        margin-top: 15px;
+        margin-top: 25px;
         background: rgba(12, 9, 6, 0.75);
         border: 1px solid #8b5a2b;
         border-radius: 4px;
-        padding: 12px;
+        padding: 16px;
       }
       .converter-title {
-        font-size: 13px;
+        font-size: 24px;
         color: #d4af37;
         font-weight: bold;
         letter-spacing: 1px;
-        margin-bottom: 8px;
+        margin-bottom: 12px;
         border-bottom: 1px dashed #5c4033;
-        padding-bottom: 4px;
+        padding-bottom: 8px;
       }
       .converter-row {
         display: flex;
-        gap: 6px;
+        gap: 8px;
         align-items: center;
-        margin-bottom: 8px;
+        margin-bottom: 12px;
       }
       .converter-input {
         background: rgba(0, 0, 0, 0.6);
         border: 1px solid #8b5a2b;
         color: #f5d77f;
-        padding: 5px 8px;
-        border-radius: 3px;
-        font-size: 13px;
-        width: 70px;
+        padding: 8px 10px;
+        border-radius: 4px;
+        font-size: 24px;
+        width: 100px;
         outline: none;
       }
       .converter-select {
         background: rgba(25, 18, 14, 0.9);
         border: 1px solid #8b5a2b;
         color: #e0d8c8;
-        padding: 5px 6px;
-        border-radius: 3px;
-        font-size: 12px;
+        padding: 8px 10px;
+        border-radius: 4px;
+        font-size: 22px;
         outline: none;
         flex: 1;
       }
       .converter-result {
         background: rgba(0, 0, 0, 0.4);
-        border-left: 2px solid #f1c40f;
-        padding: 6px 10px;
-        font-size: 12px;
+        border-left: 3px solid #f1c40f;
+        padding: 10px 14px;
+        font-size: 22px;
         color: #e0d8c8;
         line-height: 1.6;
-        border-radius: 0 3px 3px 0;
+        border-radius: 0 4px 4px 0;
       }
 
       /* 節點與須彌山漸變過渡支援 */
@@ -1233,7 +1233,7 @@
         style="
           line-height: 1.85;
           color: #d0c8b8;
-          font-size: 15px;
+          font-size: 26px;
           white-space: pre-line;
         "
       >
@@ -1244,7 +1244,7 @@
       <div id="unit-converter-box">
         <div class="converter-title">✦ 《俱舍論》時空度量衡轉換器 ✦</div>
 
-        <div style="font-size: 12px; color: #bfa588; margin-bottom: 4px">
+        <div class="converter-hint" style="color: #bfa588; margin-bottom: 6px;">
           【空間度量衡換算】：
         </div>
         <div class="converter-row">
@@ -1266,7 +1266,7 @@
         </div>
         <div id="dist-result" class="converter-result">--</div>
 
-        <div style="font-size: 12px; color: #bfa588; margin: 10px 0 4px 0">
+        <div class="converter-hint" style="color: #bfa588; margin: 16px 0 6px 0;">
           【時間度量衡換算】：
         </div>
         <div class="converter-row">
@@ -3380,6 +3380,7 @@
             metaDeitiesEl.textContent = node.details.deities || "--";
             metaStatusEl.textContent = node.details.status || "--";
             contentEl.textContent = node.details.description + karmaText;
+            updatePanelFontSizes();
             if (diagramBox) diagramBox.style.display = "none";
             if (videoBox) videoBox.style.display = "none";
             if (videoPlayer) videoPlayer.pause();
@@ -3412,6 +3413,7 @@
                 metaDeitiesEl.textContent = div.deities;
                 metaStatusEl.textContent = div.status;
                 contentEl.textContent = div.description;
+                updatePanelFontSizes();
               });
               tabContainer.appendChild(btn);
             });
@@ -3442,6 +3444,7 @@
                 metaDeitiesEl.textContent = div.deities;
                 metaStatusEl.textContent = div.status;
                 contentEl.textContent = div.description;
+                updatePanelFontSizes();
               });
               tabContainer.appendChild(btn);
             });
@@ -3476,6 +3479,7 @@
                 metaDeitiesEl.textContent = div.deities;
                 metaStatusEl.textContent = div.status;
                 contentEl.textContent = div.description;
+                updatePanelFontSizes();
               });
               tabContainer.appendChild(btn);
             });
@@ -3506,6 +3510,7 @@
                 metaDeitiesEl.textContent = king.deities;
                 metaStatusEl.textContent = king.status;
                 contentEl.textContent = king.description;
+                updatePanelFontSizes();
               });
               tabContainer.appendChild(btn);
             });
@@ -3538,6 +3543,7 @@
                 metaDeitiesEl.textContent = div.deities;
                 metaStatusEl.textContent = div.status;
                 contentEl.textContent = div.description;
+                updatePanelFontSizes();
               });
               tabContainer.appendChild(btn);
             });
@@ -3568,6 +3574,7 @@
                 metaDeitiesEl.textContent = div.deities;
                 metaStatusEl.textContent = div.status;
                 contentEl.textContent = div.description;
+                updatePanelFontSizes();
               });
               tabContainer.appendChild(btn);
             });
@@ -3598,6 +3605,7 @@
                 metaDeitiesEl.textContent = div.deities;
                 metaStatusEl.textContent = div.status;
                 contentEl.textContent = div.description;
+                updatePanelFontSizes();
               });
               tabContainer.appendChild(btn);
             });
@@ -3628,6 +3636,7 @@
                 metaDeitiesEl.textContent = div.deities;
                 metaStatusEl.textContent = div.status;
                 contentEl.textContent = div.description;
+                updatePanelFontSizes();
               });
               tabContainer.appendChild(btn);
             });
@@ -3658,6 +3667,7 @@
                 metaDeitiesEl.textContent = div.deities;
                 metaStatusEl.textContent = div.status;
                 contentEl.textContent = div.description;
+                updatePanelFontSizes();
               });
               tabContainer.appendChild(btn);
             });
@@ -3688,6 +3698,7 @@
                 metaDeitiesEl.textContent = div.deities;
                 metaStatusEl.textContent = div.status;
                 contentEl.textContent = div.description;
+                updatePanelFontSizes();
               });
               tabContainer.appendChild(btn);
             });
@@ -3728,6 +3739,7 @@
                 mountainHtml += `${index + 1}. [${item.type}] ${item.name} (${item.height || item.width})\n   ↳ ${item.desc}\n\n`;
               });
               contentEl.textContent = mountainHtml;
+              updatePanelFontSizes();
             });
             tabContainer.appendChild(seaBtn);
 
@@ -3755,6 +3767,7 @@
                 metaDeitiesEl.textContent = div.deities;
                 metaStatusEl.textContent = div.status;
                 contentEl.textContent = div.description;
+                updatePanelFontSizes();
               });
               tabContainer.appendChild(btn);
             });
@@ -3795,6 +3808,7 @@
                 mountainHtml += `${index + 1}. [${item.type}] ${item.name} (${item.height || item.width})\n   ↳ ${item.desc}\n\n`;
               });
               contentEl.textContent = mountainHtml;
+              updatePanelFontSizes();
             });
             tabContainer.appendChild(seaBtn);
 
@@ -3832,6 +3846,7 @@
                   metaDeitiesEl.textContent = cont.deities;
                   metaStatusEl.textContent = cont.status;
                   contentEl.textContent = `${cont.description}\n\n【附屬島嶼】：${cont.subIslands}`;
+                  updatePanelFontSizes();
                 });
                 tabContainer.appendChild(btn);
               });
@@ -3842,6 +3857,7 @@
             if (videoBox) videoBox.style.display = "none";
           }
 
+          updatePanelFontSizes();
           panel.classList.add("active");
           setVignetteFocus(true);
         }
@@ -3991,6 +4007,9 @@
         panel.classList.add("active");
         setVignetteFocus(true);
 
+        // 生成 Q&A HTML 後立即刷新並套用放大字級
+        updatePanelFontSizes();
+
         // 再次確保選單收起並將焦點轉至說明欄
         setTimeout(() => {
           if (quickNav) quickNav.classList.remove("open");
@@ -4050,7 +4069,9 @@
         const baseTitleSize = 40;
         const baseQaQuestionSize = 24;
         const baseQaAnswerSize = 23;
+        const baseConverterSize = 22;
 
+        // 主要面板文字
         if (contentEl)
           contentEl.style.fontSize = `${baseContentSize + currentFontOffset}px`;
         if (subTitleEl)
@@ -4058,33 +4079,31 @@
         if (titleEl)
           titleEl.style.fontSize = `${baseTitleSize + currentFontOffset}px`;
 
+        // 屬性表
         document.querySelectorAll(".meta-item").forEach((el) => {
           el.style.fontSize = `${baseMetaSize + currentFontOffset}px`;
         });
 
-        // 聯動調整 Q&A 列表問題與回答內文字級
+        // Q&A 列表
         document.querySelectorAll(".qa-question-btn").forEach((el) => {
           el.style.fontSize = `${baseQaQuestionSize + currentFontOffset}px`;
         });
         document.querySelectorAll(".qa-answer-content").forEach((el) => {
           el.style.fontSize = `${baseQaAnswerSize + currentFontOffset}px`;
         });
-      }
 
-      // 監聽並確保 Q&A 按鈕任何位置點擊皆能立即跳轉
-      document.addEventListener("DOMContentLoaded", () => {
-        const qaBtn = document.getElementById("qa-nav-btn");
-        if (qaBtn) {
-          const handleQAClick = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            openQAPanel(e);
-          };
-          qaBtn.addEventListener("click", handleQAClick);
-          qaBtn.addEventListener("pointerdown", (e) => e.stopPropagation());
-          qaBtn.addEventListener("touchend", handleQAClick);
-        }
-      });
+        // 度量衡轉換器相關元素聯動縮放
+        document.querySelectorAll(".converter-title").forEach((el) => {
+          el.style.fontSize = `${baseConverterSize + 2 + currentFontOffset}px`;
+        });
+        document.querySelectorAll(".converter-input, .converter-select, .converter-result, .converter-hint").forEach((el) => {
+          el.style.fontSize = `${baseConverterSize + currentFontOffset}px`;
+        });
+        
+        // 修正九山八海圖表提示小字
+        const hintEl = document.getElementById("diagram-hint");
+        if (hintEl) hintEl.style.fontSize = `${baseConverterSize - 2 + currentFontOffset}px`;
+      }
 
       // 監聽並確保 Q&A 按鈕任何位置點擊皆能立即跳轉
       document.addEventListener("DOMContentLoaded", () => {
