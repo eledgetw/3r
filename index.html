@@ -493,13 +493,15 @@
         color: #f1c40f;
       }
 
-      /* 《俱舍論》古典計量單位轉換器樣式 */
+      /* 《俱舍論》古典計量單位轉換器樣式 (防破版、自動換行自適應版) */
       #unit-converter-box {
         margin-top: 25px;
         background: rgba(12, 9, 6, 0.75);
         border: 1px solid #8b5a2b;
         border-radius: 4px;
         padding: 16px;
+        box-sizing: border-box;
+        width: 100%;
       }
       .converter-title {
         font-size: 24px;
@@ -509,21 +511,26 @@
         margin-bottom: 12px;
         border-bottom: 1px dashed #5c4033;
         padding-bottom: 8px;
+        word-break: break-word;
       }
       .converter-row {
         display: flex;
+        flex-direction: column; /* 改為上下直列排列，確保長文字選單不被截斷 */
         gap: 8px;
-        align-items: center;
+        align-items: stretch;
         margin-bottom: 12px;
+        width: 100%;
+        box-sizing: border-box;
       }
       .converter-input {
         background: rgba(0, 0, 0, 0.6);
         border: 1px solid #8b5a2b;
         color: #f5d77f;
-        padding: 8px 10px;
+        padding: 8px 12px;
         border-radius: 4px;
         font-size: 24px;
-        width: 100px;
+        width: 100%;
+        box-sizing: border-box;
         outline: none;
       }
       .converter-select {
@@ -532,9 +539,13 @@
         color: #e0d8c8;
         padding: 8px 10px;
         border-radius: 4px;
-        font-size: 22px;
+        font-size: 20px;
         outline: none;
-        flex: 1;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        white-space: normal;
+        text-overflow: ellipsis;
       }
       .converter-result {
         background: rgba(0, 0, 0, 0.4);
@@ -544,6 +555,9 @@
         color: #e0d8c8;
         line-height: 1.6;
         border-radius: 0 4px 4px 0;
+        box-sizing: border-box;
+        word-break: break-word;
+        overflow-wrap: break-word;
       }
 
       /* 節點與須彌山漸變過渡支援 */
