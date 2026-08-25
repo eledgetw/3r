@@ -1087,8 +1087,10 @@
           text-align: center;
           letter-spacing: 1.5px;
           box-shadow: 0 0 10px rgba(52, 152, 219, 0.35);
+          cursor: pointer;
         "
         onclick="openQAPanel(event)"
+        ontouchend="openQAPanel(event)"
       >
         💡 佛教徒常見 Q&A
       </div>
@@ -3929,13 +3931,13 @@
           if (e.stopImmediatePropagation) e.stopImmediatePropagation();
         }
 
-        // 手機端立即收起目錄選單
+        // 立即強制關閉左側目錄選單
         const quickNav = document.getElementById("quick-nav");
         if (quickNav) {
           quickNav.classList.remove("open");
         }
 
-        // 清除地圖選中高亮並聚焦 Q&A 按鈕
+        // 清除地圖選中高亮並標記 Q&A 按鈕
         document
           .querySelectorAll("#quick-nav .nav-item")
           .forEach((item) => item.classList.remove("active-node"));
@@ -3978,6 +3980,11 @@
         panel.scrollTop = 0;
         panel.classList.add("active");
         setVignetteFocus(true);
+
+        // 再次確保選單收起並將焦點轉至說明欄
+        setTimeout(() => {
+          if (quickNav) quickNav.classList.remove("open");
+        }, 50);
       }
 
       function toggleQAItem(index) {
