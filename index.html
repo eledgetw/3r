@@ -335,7 +335,7 @@
         position: fixed;
         right: -100%;
         top: 0;
-        width: 400px;
+        width: 520px;
         max-width: 100vw;
         height: 100%;
         overflow-y: auto;
@@ -791,7 +791,7 @@
         }
         #info-panel {
           width: 100vw;
-          max-width: 480px;
+          max-width: 624px;
           padding: 30px 20px;
           right: -100vw;
           z-index: 2000 !important;
@@ -1879,6 +1879,7 @@
             {
               id: "traya-city",
               name: "一、善見城與殊勝殿",
+              videoSrc: "./traya_city.mp4",
               subtitle: "帝釋天主城・千門金闕・七寶樓閣",
               lifespan: "1,000 天年 (人間 3,600 萬年)",
               desire: "微細風氣交會成欲，身自發光、衣輕如塵",
@@ -1890,6 +1891,7 @@
             {
               id: "traya-hall-tree",
               name: "二、善法堂與圓生樹",
+              videoSrc: "./traya_hall_tree.mp4",
               subtitle: "聽聞正法講堂・波利質多羅香聞百由旬",
               lifespan: "1,000 天年 (享禪悅法喜與妙花天香)",
               desire: "聽聞正法・遠離放逸",
@@ -1901,6 +1903,7 @@
             {
               id: "traya-parks",
               name: "三、三十三天與四大園苑",
+              videoSrc: "./traya_parks.mp4",
               subtitle: "眾車・麤惡・雜林・喜林四大天苑",
               lifespan: "1,000 天年 (遊觀園林・天樂天食隨念而至)",
               desire: "遊觀天苑・自然受用七寶天池妙果",
@@ -1912,6 +1915,7 @@
             {
               id: "traya-dharma-asura",
               name: "四、佛法淵源與降伏修羅",
+              videoSrc: "./traya_dharma_asura.mp4",
               subtitle: "佛陀為母說法・升天宮降魔破修羅陣",
               lifespan: "天福享盡現五衰相 (隨宿業受生輪迴)",
               desire: "嗔火起時引動戰陣・聽法時心生清涼",
@@ -1939,6 +1943,7 @@
             {
               id: "south-king",
               name: "南方增長天王 (毘樓勒叉)",
+              videoSrc: "./south_king.mp4",
               subtitle: "守護南瞻部洲 (地球人類世界)・智慧青鋒斬煩惱",
               lifespan: "500 天年 (人間約 900 萬年，人間 50 年為一日夜)",
               desire: "男女身形交接成欲 (微細清淨)，子女生於天人膝上化生",
@@ -1950,6 +1955,7 @@
             {
               id: "east-king",
               name: "東方持國天王 (提頭賴吒)",
+              videoSrc: "./east_king.mp4",
               subtitle: "守護東勝神洲・琵琶定音・慈悲護國度生",
               lifespan: "500 天年 (人間約 900 萬年，人間 50 年為一日夜)",
               desire: "男女身形交接成欲，以微妙天樂為心意資糧",
@@ -1961,6 +1967,7 @@
             {
               id: "west-king",
               name: "西方廣目天王 (毘樓博叉)",
+              videoSrc: "./west_king.mp4",
               subtitle: "守護西牛賀洲・淨天眼洞察世間・神龍順應變化",
               lifespan: "500 天年 (人間約 900 萬年，人間 50 年為一日夜)",
               desire: "男女身形交接成欲，以清淨天眼觀照世間無常",
@@ -1972,6 +1979,7 @@
             {
               id: "north-king",
               name: "北方多聞天王 (毘沙門天)",
+              videoSrc: "./north_king.mp4",
               subtitle: "守護北俱盧洲・居四天王之首・福德財富之神",
               lifespan: "500 天年 (人間約 900 萬年，人間 50 年為一日夜)",
               desire: "男女身形交接成欲，福德浩大身自放無量寶光",
@@ -2518,7 +2526,16 @@
       }
       window.addEventListener("pointerdown", unlockAudioContext);
       window.addEventListener("wheel", unlockAudioContext);
-      window.addEventListener("keydown", unlockAudioContext);
+      window.addEventListener("keydown", (e) => {
+        unlockAudioContext();
+        // 監聽空白鍵切換靜音 (排除使用者正在輸入框內操作的情況)
+        if (e.code === "Space" || e.key === " ") {
+          if (e.target.tagName !== "INPUT" && e.target.tagName !== "TEXTAREA") {
+            e.preventDefault(); // 防止按下空白鍵時畫面跟著往下捲動
+            toggleGlobalAudio();
+          }
+        }
+      });
 
       function enterExperience() {
         const splash = document.getElementById("splash-screen");
@@ -3527,6 +3544,15 @@
                   .forEach((b) => b.classList.remove("active-tab"));
                 btn.classList.add("active-tab");
 
+                // 自動播放四大天王各尊之專屬法相影片
+                if (king.videoSrc && videoBox && videoPlayer) {
+                  videoPlayer.src = king.videoSrc;
+                  videoBox.style.display = "block";
+                  videoPlayer.play().catch(() => {});
+                } else if (videoBox) {
+                  videoBox.style.display = "none";
+                }
+
                 titleEl.textContent = king.name;
                 subTitleEl.textContent = king.subtitle;
                 metaLifespanEl.textContent = king.lifespan;
@@ -3730,43 +3756,6 @@
             tabContainer.innerHTML = "";
             tabContainer.style.display = "flex";
 
-            const seaBtn = document.createElement("button");
-            seaBtn.className = "continent-tab-btn";
-            seaBtn.textContent = "🌊 九山八海全圖";
-            seaBtn.addEventListener("click", (e) => {
-              e.stopPropagation();
-              if (seaBtn.classList.contains("active-tab")) {
-                resetToParentNodeView();
-                return;
-              }
-              document
-                .querySelectorAll(".continent-tab-btn")
-                .forEach((b) => b.classList.remove("active-tab"));
-              seaBtn.classList.add("active-tab");
-
-              if (videoBox) videoBox.style.display = "none";
-              if (videoPlayer) videoPlayer.pause();
-
-              renderNineMountainsSvg();
-
-              titleEl.textContent = "九山八海・七金山";
-              subTitleEl.textContent =
-                "【結構】：由內至外重重環繞之同心階梯山海格局";
-              metaLifespanEl.textContent = "器世間成壞四劫（一中劫住劫）";
-              metaDesireEl.textContent = "水陸各類地居與水居眾生依止所";
-              metaDeitiesEl.textContent =
-                "四大天王護法善神、娑竭羅龍王、大海阿修羅";
-              metaStatusEl.textContent = "世界安立根基・最外圍由大鐵圍山包覆";
-
-              let mountainHtml = "【《俱舍論》九山八海階梯同心展開】：\n\n";
-              nineMountainsEightSeasData.forEach((item, index) => {
-                mountainHtml += `${index + 1}. [${item.type}] ${item.name} (${item.height || item.width})\n   ↳ ${item.desc}\n\n`;
-              });
-              contentEl.textContent = mountainHtml;
-              updatePanelFontSizes();
-            });
-            tabContainer.appendChild(seaBtn);
-
             node.trayastrimsaDivisions.forEach((div) => {
               const btn = document.createElement("button");
               btn.className = "continent-tab-btn";
@@ -3783,6 +3772,15 @@
                 btn.classList.add("active-tab");
 
                 if (diagramBox) diagramBox.style.display = "none";
+
+                // 自動播放忉利天各子項目的專屬影片
+                if (div.videoSrc && videoBox && videoPlayer) {
+                  videoPlayer.src = div.videoSrc;
+                  videoBox.style.display = "block";
+                  videoPlayer.play().catch(() => {});
+                } else if (videoBox) {
+                  videoBox.style.display = "none";
+                }
 
                 titleEl.textContent = div.name;
                 subTitleEl.textContent = div.subtitle;
@@ -4341,7 +4339,8 @@
           !e.target.closest("#macro-cosmos-hint") &&
           !e.target.closest(".node-label-box") &&
           !e.target.closest(".node-img") &&
-          !e.target.closest(".node-video")
+          !e.target.closest(".node-video") &&
+          !e.target.closest("#view-controls")
         ) {
           if (panel.classList.contains("active")) {
             panel.classList.remove("active");
