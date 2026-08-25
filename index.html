@@ -224,15 +224,20 @@
         user-select: none;
       }
 
-      /* 左上方古典層級導覽樹 (三界與六道從屬關係) */
+      /* 左上方古典層級導覽樹 (優化平板與觸控滑動) */
       #quick-nav {
         position: fixed;
         left: 20px;
         top: 20px;
         width: 250px;
-        max-height: 90vh;
-        overflow-y: auto;
-        background: rgba(18, 13, 10, 0.92);
+        max-height: calc(100vh - 40px);
+        max-height: calc(100dvh - 40px);
+        overflow-y: auto !important;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y !important;
+        overscroll-behavior: contain;
+        background: rgba(18, 13, 10, 0.94);
         border: 1px solid #8b5a2b;
         border-radius: 6px;
         padding: 12px 10px;
@@ -244,6 +249,16 @@
         transition:
           transform 0.3s ease,
           opacity 0.3s ease;
+      }
+      #quick-nav::-webkit-scrollbar {
+        width: 6px;
+      }
+      #quick-nav::-webkit-scrollbar-track {
+        background: rgba(10, 5, 0, 0.4);
+      }
+      #quick-nav::-webkit-scrollbar-thumb {
+        background: #8b5a2b;
+        border-radius: 3px;
       }
       .nav-title {
         color: #d4af37;
@@ -732,21 +747,24 @@
         border-color: #d4af37;
       }
 
-      /* 行動裝置與平板響應式優化 (手機/平板寬度 <= 768px) */
-      @media (max-width: 768px) {
+      /* 平板與行動裝置響應式優化 (適配寬度 <= 1024px 之 iPad 及各類平板) */
+      @media (max-width: 1024px) {
         #nav-toggle-btn {
-          display: block; /* 顯示手機端開關按鈕 */
+          display: block; /* 顯示選單開關按鈕 */
         }
         #quick-nav {
-          left: calc(10px + env(safe-area-inset-left, 0px));
+          left: calc(15px + env(safe-area-inset-left, 0px));
           top: calc(65px + env(safe-area-inset-top, 0px));
           width: calc(100vw - 40px);
-          max-width: 320px;
-          max-height: 70vh;
+          max-width: 340px;
+          max-height: calc(85vh - 70px);
+          max-height: calc(85dvh - 70px);
           transform: translateY(-20px);
           opacity: 0;
           pointer-events: none;
           z-index: 1000;
+          touch-action: pan-y !important;
+          -webkit-overflow-scrolling: touch;
         }
         #quick-nav.open {
           transform: translateY(0);
@@ -759,9 +777,10 @@
         }
         #info-panel {
           width: 100vw;
-          padding: 25px 20px;
+          max-width: 480px;
+          padding: 30px 20px;
           right: -100vw;
-          z-index: 2000 !important; /* 確保在手機端完全覆蓋在目錄之上 */
+          z-index: 2000 !important;
           transition: right 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
         #info-panel.active {
@@ -4258,6 +4277,13 @@
       viewport.addEventListener(
         "touchmove",
         (e) => {
+          // 若觸控在導覽目錄或說明欄內部，放行原生捲動
+          if (
+            e.target.closest("#quick-nav") ||
+            e.target.closest("#info-panel")
+          ) {
+            return;
+          }
           e.preventDefault();
           if (e.touches.length === 1 && isTouching) {
             translateX = e.touches[0].clientX - touchStartX;
