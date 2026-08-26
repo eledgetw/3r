@@ -1749,7 +1749,7 @@
           details: {
             subtitle: "欲界第四層天 (彌勒內院淨土與外院天宮)",
             description:
-              "梵名 Tuṣita，音譯「兜率陀」或「睹史多」，意為「知足、喜足、妙足」。居於夜摩天之上三十二萬由旬之虛空雲海中，為欲界空居天之核心樞紐。\n\n【根本空間結構與經典記載】（出處：《佛說觀彌勒菩薩上生兜率天經》、《俱舍論》卷十一）：\n本天清晰劃分為兩大實體領域——「內院」為一生補處（候補成佛）菩薩說法之不退轉淨土，由四十九重摩尼寶殿與善法講堂構成；「外院」為知足天王統領之凡夫天宮與七寶苑池。此天高居雲海，免受世間水火風三大劫災摧毀。\n\n【情慾型態與一生補處】（出處：《大毘婆沙論》卷一一三、《彌勒下生經》）：\n天人男女若生愛慕，唯以「執手相握、相視而笑」即解欲垢，子女生於膝上化生。天壽為四千天年（人間400年為一日夜，約人間5.76億年）。彌勒菩薩於此說法，待天壽滿將下生人間開演「龍華三會」。請點選上方標籤切換檢視四大空間建築詳細說明。",
+              "梵名 Tuṣita，音譯「兜率陀」或「睹史多」，意為「知足、喜足、妙足」。居於夜摩天之上三十二萬由旬之虛空雲海中，為欲界空居天之核心樞紐。\n\n【根本空間結構與經典記載】（出處：《佛說觀彌勒菩薩上生兜率天經》、《俱舍論》卷十一）：\n本天清晰劃分為兩大實體領域——「內院」為一生補處（候補成佛）菩薩說法之不退轉淨土，由四十九重摩尼寶殿與善法講堂構成；「外院」為知足天王統領之凡夫天宮與七寶苑池。此天高居雲海，免受世間水火風三大劫災摧毀。\n\n【情慾型態與一生補處】（出處：《大毘婆沙論》卷一一三、《彌勒下生經》）：\n天人男女若生愛慕，唯以「執手相握、相視而笑」即解欲垢，子女生於膝上化生。天壽為四千天年（人間400年為一日夜，約人間5.76億年）。彌勒菩薩於此說法，待天壽滿將下生人間開演「龍華三會」。請點選上方標籤檢視四大空間建築詳細說明。",
           },
           tushitaDivisions: [
             {
@@ -3375,12 +3375,56 @@
         });
       }
 
+      // 停止說明欄小影片並恢復外層畫布影片與音效
+      function stopPanelVideo() {
+        const videoBox = document.getElementById("continent-video-box");
+        const videoPlayer = document.getElementById("continent-video-player");
+        if (videoPlayer) {
+          videoPlayer.pause();
+          videoPlayer.muted = true;
+        }
+        if (videoBox) videoBox.style.display = "none";
+        // 恢復外層背景影片播放
+        if (!isUserMuted) {
+          updateNavHighlight();
+        }
+      }
+
+      // 播放說明欄小影片並暫停/靜音外層背景影片
+      function playPanelVideo(src) {
+        const videoBox = document.getElementById("continent-video-box");
+        const videoPlayer = document.getElementById("continent-video-player");
+        if (!videoPlayer || !videoBox || !src) return;
+
+        // 1. 暫停並靜音所有外層畫布影片
+        const sumeruVid = document.getElementById("sumeru-mountain");
+        if (sumeruVid) {
+          sumeruVid.muted = true;
+          sumeruVid.pause();
+        }
+        document.querySelectorAll(".node-video").forEach((vid) => {
+          vid.muted = true;
+          vid.pause();
+        });
+
+        // 2. 播放說明欄小影片並開啟聲音
+        videoPlayer.src = src;
+        videoBox.style.display = "block";
+        if (!isUserMuted && isAudioUnlocked) {
+          videoPlayer.muted = false;
+          videoPlayer.volume = 1.0;
+        } else {
+          videoPlayer.muted = true;
+        }
+        videoPlayer.play().catch(() => {});
+      }
+
       function toggleInfoPanel(node) {
         const tabContainer = document.getElementById("continent-tab-container");
         const diagramBox = document.getElementById("diagram-box");
+        const metaBox = document.getElementById("panel-meta-box");
         const videoBox = document.getElementById("continent-video-box");
         const videoPlayer = document.getElementById("continent-video-player");
-        const metaBox = document.getElementById("panel-meta-box");
         if (metaBox) metaBox.style.display = "flex"; // 點選其他天界時恢復顯示屬性方塊
 
         // 若在手機模式，開啟詳細面板時自動收合左側目錄
@@ -3395,15 +3439,13 @@
           panel.classList.remove("active");
           currentActiveNodeId = null;
           setVignetteFocus(false);
-          if (videoBox) videoBox.style.display = "none";
-          if (videoPlayer) videoPlayer.pause();
+          stopPanelVideo();
         } else {
           currentActiveNodeId = node.id;
           titleEl.textContent = node.title;
           subTitleEl.textContent = node.details.subtitle;
 
-          if (videoBox) videoBox.style.display = "none";
-          if (videoPlayer) videoPlayer.pause();
+          stopPanelVideo();
 
           const karma = karmaRelations[node.id];
           let karmaText = "";
@@ -3448,8 +3490,7 @@
             contentEl.textContent = node.details.description + karmaText;
             updatePanelFontSizes();
             if (diagramBox) diagramBox.style.display = "none";
-            if (videoBox) videoBox.style.display = "none";
-            if (videoPlayer) videoPlayer.pause();
+            stopPanelVideo();
           };
 
           if (node.id === "pure-land" && node.pureLandDivisions) {
@@ -3570,12 +3611,10 @@
                 btn.classList.add("active-tab");
 
                 // 自動播放四大天王各尊之專屬法相影片
-                if (king.videoSrc && videoBox && videoPlayer) {
-                  videoPlayer.src = king.videoSrc;
-                  videoBox.style.display = "block";
-                  videoPlayer.play().catch(() => {});
-                } else if (videoBox) {
-                  videoBox.style.display = "none";
+                if (king.videoSrc) {
+                  playPanelVideo(king.videoSrc);
+                } else {
+                  stopPanelVideo();
                 }
 
                 titleEl.textContent = king.name;
@@ -3612,12 +3651,10 @@
                 btn.classList.add("active-tab");
 
                 // 自動播放四大阿修羅王各品類之專屬影片
-                if (div.videoSrc && videoBox && videoPlayer) {
-                  videoPlayer.src = div.videoSrc;
-                  videoBox.style.display = "block";
-                  videoPlayer.play().catch(() => {});
-                } else if (videoBox) {
-                  videoBox.style.display = "none";
+                if (div.videoSrc) {
+                  playPanelVideo(div.videoSrc);
+                } else {
+                  stopPanelVideo();
                 }
 
                 titleEl.textContent = div.name;
@@ -3652,12 +3689,10 @@
                 btn.classList.add("active-tab");
 
                 // 自動播放畜生道各品類之專屬影片
-                if (div.videoSrc && videoBox && videoPlayer) {
-                  videoPlayer.src = div.videoSrc;
-                  videoBox.style.display = "block";
-                  videoPlayer.play().catch(() => {});
-                } else if (videoBox) {
-                  videoBox.style.display = "none";
+                if (div.videoSrc) {
+                  playPanelVideo(div.videoSrc);
+                } else {
+                  stopPanelVideo();
                 }
 
                 titleEl.textContent = div.name;
@@ -3692,12 +3727,10 @@
                 btn.classList.add("active-tab");
 
                 // 自動播放餓鬼道各品類之專屬影片
-                if (div.videoSrc && videoBox && videoPlayer) {
-                  videoPlayer.src = div.videoSrc;
-                  videoBox.style.display = "block";
-                  videoPlayer.play().catch(() => {});
-                } else if (videoBox) {
-                  videoBox.style.display = "none";
+                if (div.videoSrc) {
+                  playPanelVideo(div.videoSrc);
+                } else {
+                  stopPanelVideo();
                 }
 
                 titleEl.textContent = div.name;
@@ -3732,12 +3765,10 @@
                 btn.classList.add("active-tab");
 
                 // 自動播放地獄道各品類之專屬影片
-                if (div.videoSrc && videoBox && videoPlayer) {
-                  videoPlayer.src = div.videoSrc;
-                  videoBox.style.display = "block";
-                  videoPlayer.play().catch(() => {});
-                } else if (videoBox) {
-                  videoBox.style.display = "none";
+                if (div.videoSrc) {
+                  playPanelVideo(div.videoSrc);
+                } else {
+                  stopPanelVideo();
                 }
 
                 titleEl.textContent = div.name;
@@ -3772,12 +3803,10 @@
                 btn.classList.add("active-tab");
 
                 // 自動播放兜率天各空間建築之專屬影片
-                if (div.videoSrc && videoBox && videoPlayer) {
-                  videoPlayer.src = div.videoSrc;
-                  videoBox.style.display = "block";
-                  videoPlayer.play().catch(() => {});
-                } else if (videoBox) {
-                  videoBox.style.display = "none";
+                if (div.videoSrc) {
+                  playPanelVideo(div.videoSrc);
+                } else {
+                  stopPanelVideo();
                 }
 
                 titleEl.textContent = div.name;
@@ -3812,12 +3841,10 @@
                 btn.classList.add("active-tab");
 
                 // 自動播放夜摩天各城邑之專屬影片
-                if (div.videoSrc && videoBox && videoPlayer) {
-                  videoPlayer.src = div.videoSrc;
-                  videoBox.style.display = "block";
-                  videoPlayer.play().catch(() => {});
-                } else if (videoBox) {
-                  videoBox.style.display = "none";
+                if (div.videoSrc) {
+                  playPanelVideo(div.videoSrc);
+                } else {
+                  stopPanelVideo();
                 }
 
                 titleEl.textContent = div.name;
@@ -3853,12 +3880,10 @@
                 if (diagramBox) diagramBox.style.display = "none";
 
                 // 自動播放忉利天各子項目的專屬影片
-                if (div.videoSrc && videoBox && videoPlayer) {
-                  videoPlayer.src = div.videoSrc;
-                  videoBox.style.display = "block";
-                  videoPlayer.play().catch(() => {});
-                } else if (videoBox) {
-                  videoBox.style.display = "none";
+                if (div.videoSrc) {
+                  playPanelVideo(div.videoSrc);
+                } else {
+                  stopPanelVideo();
                 }
 
                 titleEl.textContent = div.name;
@@ -3890,8 +3915,7 @@
                 .forEach((b) => b.classList.remove("active-tab"));
               seaBtn.classList.add("active-tab");
 
-              if (videoBox) videoBox.style.display = "none";
-              if (videoPlayer) videoPlayer.pause();
+              stopPanelVideo();
 
               renderNineMountainsSvg();
 
@@ -3932,12 +3956,10 @@
                   if (diagramBox) diagramBox.style.display = "none";
 
                   // 播放對應部洲影片
-                  if (cont.videoSrc && videoBox && videoPlayer) {
-                    videoPlayer.src = cont.videoSrc;
-                    videoBox.style.display = "block";
-                    videoPlayer.play().catch(() => {});
-                  } else if (videoBox) {
-                    videoBox.style.display = "none";
+                  if (cont.videoSrc) {
+                    playPanelVideo(cont.videoSrc);
+                  } else {
+                    stopPanelVideo();
                   }
 
                   titleEl.textContent = cont.name;
@@ -3955,7 +3977,7 @@
           } else {
             tabContainer.style.display = "none";
             if (diagramBox) diagramBox.style.display = "none";
-            if (videoBox) videoBox.style.display = "none";
+            stopPanelVideo();
           }
 
           updatePanelFontSizes();
