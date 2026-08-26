@@ -1693,7 +1693,7 @@
           ],
         },
 
-        // --- 4. 欲界第六天：他化自在天 (拉開視覺間距・向上平移 200px) ---
+        // --- 4. 欲界第六天：他化自在天 (主城與別宮版) ---
         {
           id: "paranirmita",
           title: "他化自在天",
@@ -1707,10 +1707,36 @@
               "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=1000&q=80",
           },
           details: {
-            subtitle: "欲界第六層天 (欲界之頂・波旬天魔宮殿)",
+            subtitle: "欲界第六層天 (欲界之頂・正宮與天魔別宮)",
             description:
-              "梵語意為他化自在，為欲界最高層天，居於虛空萬道虹光之中：\n\n【奪他所化自在受用】：天人福德神力極大，自身不需勞心變化，悉奪下界諸天所幻化之現成七寶宮殿、天樂美食而自由受用娛樂，於欲境得大自在。\n【情欲型態】：欲界情愛最精微層次，男女若生愛慕，「相向熟視」（長久深情對視）即得滿足成辦欲事，無肉身接觸；子女生於天人膝上化生（初生如十歲童子，光明赫奕）。\n【天魔波旬與道障】：魔王波旬居於此天別宮，主宰欲界，因貪戀五欲權勢，恐眾生修道出離三界，常遣魔軍魔女障礙修行者（如佛陀成道前降伏魔障）。天壽達一萬六千天年（約人間92億年），福盡仍墮輪迴。",
+              "梵名 Paranirmita-vaśavartin，音譯「波羅尼蜜婆舍跋提」，意為「他化自在」或「他化樂天」。居於化樂天之上、虛空萬道虹光與彩霞之中，為欲界器世間之最高極頂。\n\n【兩大核心宮殿結構】（出處：《長阿含經・世紀經》、《俱舍論》卷十一、《大智度論》卷九）：\n本天在空間上劃分為「正統天王主城」與「天魔波旬別宮」。正宮由持守正法之他化天王統領，享無邊清淨福樂；別宮則為欲界魔王波旬與魔軍所居，執掌世俗欲權。天壽為一萬六千天年（人間1,600年為一日夜，約人間92億1,600萬年）。請點選上方標籤切換檢視兩大主宮殿與經典記載。",
           },
+          paranirmitaDivisions: [
+            {
+              id: "paranirmita-king-palace",
+              name: "一、主城・他化自在天王正宮",
+              videoSrc: "./paranirmita_king_palace.mp4",
+              subtitle: "欲界頂層正宮・萬道霞光浮空神城",
+              lifespan: "16,000 天年 (約人間 92 億 1,600 萬年)",
+              desire: "身自散發赫奕金光・映蔽下界一切光色",
+              deities: "他化自在天王、持天界威德諸善天神",
+              status: "欲界最高行政主宮・統領欲界六天全境",
+              description:
+                "【住處與神城格局】（出處：《長阿含經》卷二十、《起世因本經》卷七）：\n他化自在天正統天王所居之中央主城。城闕純由紫磨真金、琉璃、玻瓈等七寶所成，浮於欲界最高層空界，周圍有七重寶欄、千重神光樓閣與垂掛寶鈴，微風吹拂自然演說讚佛妙音。\n\n【威德與境界】：\n天王身量二由旬，天衣輕若微塵，威德光明照徹億萬由旬，統轄欲界六天之一切世俗善惡秩序。",
+            },
+            {
+              id: "paranirmita-mara-palace",
+              name: "二、別宮・魔王波旬極樂宮",
+              videoSrc: "./paranirmita_mara_palace.mp4",
+              subtitle: "魔王波旬別院・欲界權柄與魔子魔女所居",
+              lifespan: "16,000 天年 (享欲界最極致權威與享樂)",
+              desire: "貪執欲界世俗權威・恐修行者出離三界",
+              deities: "魔王波旬 (Pāpīyān)、魔子、魔女、魔軍神將",
+              status: "天魔本營・主宰欲界生死流轉之樞紐",
+              description:
+                "【魔王別宮格局】（出處：《大智度論》卷九、《俱舍論》卷十一）：\n位於他化自在天主城旁之獨立別院。魔王波旬（意為極惡或殺者）自視為欲界之主，宮殿幽深宏麗、極盡奢華，有億萬魔軍神將與姝麗魔女日夜拱衛。\n\n【道障根本】：\n波旬因貪戀三界權柄，每逢世間有修行者精進修持欲出離輪迴時，波旬天宮即震動不安，常遣使化現魔障干擾求道者。",
+            },
+          ],
         },
 
         // --- 5. 欲界第五天：化樂天 ---
@@ -1729,8 +1755,58 @@
           details: {
             subtitle: "欲界第五層天空居天 (隨念自化五欲之境)",
             description:
-              "梵語意為樂變化天，居於兜率天之上、虛空七寶宮殿之中：\n\n【隨心幻化妙樂】：天人不假外求，欲受用色聲香味觸等五欲境界時，隨自身意念與神通力，瞬間於虛空中幻化出無量七寶宮殿、天樂華服與微妙美味，自娛自樂，受用完畢自然化散。\n【情欲型態】：男女情欲極其微細清純，無肢體牽纏，男女若生愛慕，「相向熟視、相視含笑」即得熱惱消除、成辦欲事；子女生於天人膝上化生（初生如七歲孩童）。\n【輪迴定位】：福報浩大，身自散發五彩光明，身長一由旬半；但因耽溺於自身心意幻化之極致五欲妙樂，易生執著，天壽盡時仍隨宿業輪迴。",
+              "梵名 Nirmāṇarati，音譯「尼摩羅提」，意為「樂變化天」或「化自樂天」。居於兜率天之上六十四萬由旬之虛空雲海中。\n\n【根本特質與經典記載】（出處：《俱舍論》卷十一、《長阿含經・世紀經》）：\n此天天人不假外求，欲受用色聲香味觸等五欲境界時，純憑自身福德與神通力，隨心念於虛空中自然化現出無量七寶樓閣、天衣、天樂與甘露美食；受用完畢自然化散，心無牽絆。\n\n【情慾型態與化生】（出處：《俱舍論》卷十一、《大毘婆沙論》卷一一三）：\n情慾極其微細清純，男女若生愛慕，「相向熟視、相視含笑」即除熱惱成辦欲事；子女生於男女膝上自然化生（初生如人間七歲孩童，身長一由旬半）。\n\n天壽長達八千天年（人間800年為一日夜，約人間23億400萬年）。請點選上方標籤檢視四大空間與經典法義詳細說明。",
           },
+          nirmanaratiDivisions: [
+            {
+              id: "nirmanarati-king-palace",
+              name: "一、主城・善化天王七寶宮",
+              videoSrc: "./nirmanarati_king_palace.mp4",
+              subtitle: "善化天王中央正宮・虛空萬道神光交映",
+              lifespan: "8,000 天年 (約人間 23 億 400 萬年)",
+              desire: "純受自化五欲・身放五彩光明映蔽虛空",
+              deities: "化自樂天王 (善化天王 Sunirmita)、化樂天臣",
+              status: "化樂主宮・統領欲界第五天全界宮邑",
+              description:
+                "【住處與宮殿格局】（出處：《長阿含經》卷二十、《起世因本經》卷七）：\n化自樂天王「善化（Sunirmita）」所居之正殿。宮殿純依福德力於五彩祥雲中自然凝結，周圍有七重寶牆、七寶行樹與無量懸浮樓閣，微風吹拂天樹自然流淌微細梵音。\n\n【威德與神通】：\n天王神力浩大，威德光明照耀千由旬，能隨一念幻化出萬千不可思議莊嚴景緻供全界受用，為欲界隨念化樂之主。",
+            },
+            {
+              id: "nirmanarati-creation",
+              name: "二、妙境・隨心自化五欲境",
+              videoSrc: "./nirmanarati_creation.mp4",
+              subtitle: "不假外求・隨念自化衣食住行微妙樂境",
+              lifespan: "8,000 天年 (身長一由旬半・天衣重一銖)",
+              desire: "隨念變現色聲香味觸・受用即散無殘渣",
+              deities: "化樂天眾、隨心變現諸天子",
+              status: "空居天妙境・五欲自在自娛・無爭無奪",
+              description:
+                "【隨念幻化受用】（出處：《俱舍論》卷十一、《大智度論》卷九）：\n天人欲遊觀時即現寶車林苑，欲飲食時即現百味甘露，欲聽樂時虛空自然鳴奏天樂。受用完畢意念一轉，境界即時化滅，無物質殘渣與藏匿爭奪之苦。\n\n【投生業因】（出處：《正法念處經》卷四十三）：\n生前修持上品十善，好行清淨布施，心量廣大無礙，樂見他人獲益，並好樂自力更生而不貪佔他人財物，命終感生此自化妙樂之處。",
+            },
+            {
+              id: "nirmanarati-courtship",
+              name: "三、情慾・相視含笑與膝上化生",
+              videoSrc: "./nirmanarati_courtship.mp4",
+              subtitle: "相視含笑成欲・膝上化生七歲童子",
+              lifespan: "8,000 天年 (受用清淨情樂)",
+              desire: "相向熟視、相視含笑即除情愛熱惱",
+              deities: "化樂天子天女、化生天童",
+              status: "微細情慾・離形質交接・清淨受生",
+              description:
+                "【情慾型態】（出處：《俱舍論》卷十一、《大毘婆沙論》卷一一三）：\n欲界情慾至此層天更趨澄澈，男女天人若生愛慕，相向凝視、莞爾含笑，微細情欲即得圓滿滿足，無肢體牽纏與不淨涕唾。\n\n【化生情狀】：\n子女生於男女膝上自然化現，初生即如人間七歲童子，身具光明、智慧明利，飲天甘露瞬息長成一由旬半之殊妙天身。",
+            },
+            {
+              id: "nirmanarati-impermanence",
+              name: "四、警示・耽溺自化與五衰無常",
+              videoSrc: "./nirmanarati_impermanence.mp4",
+              subtitle: "耽樂障慧・天福享盡五衰相現隨業受報",
+              lifespan: "天福雖長・未發無漏慧・福盡仍墮輪迴",
+              desire: "易耽溺於自心幻化樂境・難發出離道心",
+              deities: "五衰相現天人、化樂天眾",
+              status: "世俗福報極限・非究竟安穩・警惕無常",
+              description:
+                "【耽樂過患】（出處：《正法念處經》卷四十三、《涅槃經》）：\n化樂天人因隨心所欲、樂境無窮，極易沉醉於自己心意變現之五欲妙境，難以生起修持出世間無漏智慧與求生淨土之出離心。\n\n【五衰輪迴】：\n八千天年享盡之際，五衰相現（花冠凋萎、天衣垢穢、身出臭汗、腋下流汗、不樂本座），過去潛藏之宿世善惡業種再次成熟，仍須退轉受生六道輪迴。",
+            },
+          ],
         },
 
         // --- 6. 欲界第四天：兜率天 ---
@@ -3778,6 +3854,82 @@
                 btn.classList.add("active-tab");
 
                 // 自動播放地獄道各品類之專屬影片
+                if (div.videoSrc) {
+                  playPanelVideo(div.videoSrc);
+                } else {
+                  stopPanelVideo();
+                }
+
+                titleEl.textContent = div.name;
+                subTitleEl.textContent = div.subtitle;
+                metaLifespanEl.textContent = div.lifespan;
+                metaDesireEl.textContent = div.desire;
+                metaDeitiesEl.textContent = div.deities;
+                metaStatusEl.textContent = div.status;
+                contentEl.textContent = div.description;
+                updatePanelFontSizes();
+              });
+              tabContainer.appendChild(btn);
+            });
+          } else if (node.id === "paranirmita" && node.paranirmitaDivisions) {
+            tabContainer.innerHTML = "";
+            tabContainer.style.display = "flex";
+            if (diagramBox) diagramBox.style.display = "none";
+
+            node.paranirmitaDivisions.forEach((div) => {
+              const btn = document.createElement("button");
+              btn.className = "continent-tab-btn";
+              btn.textContent = div.name.split(" ")[0];
+              btn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                if (btn.classList.contains("active-tab")) {
+                  resetToParentNodeView();
+                  return;
+                }
+                document
+                  .querySelectorAll(".continent-tab-btn")
+                  .forEach((b) => b.classList.remove("active-tab"));
+                btn.classList.add("active-tab");
+
+                // 自動播放他化自在天主城或別宮之專屬影片
+                if (div.videoSrc) {
+                  playPanelVideo(div.videoSrc);
+                } else {
+                  stopPanelVideo();
+                }
+
+                titleEl.textContent = div.name;
+                subTitleEl.textContent = div.subtitle;
+                metaLifespanEl.textContent = div.lifespan;
+                metaDesireEl.textContent = div.desire;
+                metaDeitiesEl.textContent = div.deities;
+                metaStatusEl.textContent = div.status;
+                contentEl.textContent = div.description;
+                updatePanelFontSizes();
+              });
+              tabContainer.appendChild(btn);
+            });
+          } else if (node.id === "nirmanarati" && node.nirmanaratiDivisions) {
+            tabContainer.innerHTML = "";
+            tabContainer.style.display = "flex";
+            if (diagramBox) diagramBox.style.display = "none";
+
+            node.nirmanaratiDivisions.forEach((div) => {
+              const btn = document.createElement("button");
+              btn.className = "continent-tab-btn";
+              btn.textContent = div.name.split(" ")[0];
+              btn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                if (btn.classList.contains("active-tab")) {
+                  resetToParentNodeView();
+                  return;
+                }
+                document
+                  .querySelectorAll(".continent-tab-btn")
+                  .forEach((b) => b.classList.remove("active-tab"));
+                btn.classList.add("active-tab");
+
+                // 自動播放化樂天各細階之專屬影片
                 if (div.videoSrc) {
                   playPanelVideo(div.videoSrc);
                 } else {
