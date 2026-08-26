@@ -2526,8 +2526,12 @@
         isUserMuted = !isUserMuted;
         updateAudioBtnUI();
 
+        const videoPlayer = document.getElementById("continent-video-player");
+        const isPanelVideoActive =
+          videoPlayer && videoPlayer.src && !videoPlayer.paused;
+
         if (isUserMuted) {
-          // 靜音並暫停所有影片音效
+          // 靜音並暫停所有影片音效（含外層畫布與說明欄小影片）
           const sumeruVid = document.getElementById("sumeru-mountain");
           if (sumeruVid) {
             sumeruVid.muted = true;
@@ -2537,9 +2541,18 @@
             vid.muted = true;
             vid.pause();
           });
+          if (videoPlayer) {
+            videoPlayer.muted = true;
+          }
         } else {
           isAudioUnlocked = true;
-          updateNavHighlight();
+          // 若說明欄小影片正在播放，解除小影片靜音；否則恢復外層畫布音效
+          if (isPanelVideoActive) {
+            videoPlayer.muted = false;
+            videoPlayer.volume = 1.0;
+          } else {
+            updateNavHighlight();
+          }
         }
       }
 
