@@ -1254,62 +1254,122 @@
         內容
       </p>
 
-      <!-- 《俱舍論》計量單位轉換器 -->
+      <!-- 《俱舍論》計量單位轉換器 (預設收起折疊版) -->
       <div id="unit-converter-box">
-        <div class="converter-title">✦ 《俱舍論》時空度量衡轉換器 ✦</div>
-
-        <div class="converter-hint" style="color: #bfa588; margin-bottom: 6px">
-          【空間度量衡換算】：
+        <div
+          class="converter-title"
+          onclick="toggleUnitConverter()"
+          style="
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0;
+            border-bottom: none;
+            padding-bottom: 0;
+          "
+        >
+          <span>✦ 《俱舍論》時空度量衡轉換器 ✦</span>
+          <span
+            id="converter-arrow"
+            style="
+              font-size: 18px;
+              color: #f1c40f;
+              transition: transform 0.2s ease;
+            "
+            >▼</span
+          >
         </div>
-        <div class="converter-row">
-          <input
-            type="number"
-            id="dist-input"
-            class="converter-input"
-            value="1"
-            min="0.001"
-            step="any"
-          />
-          <select id="dist-unit" class="converter-select">
-            <option value="yojana">由旬 (俱舍大由旬 11.2km)</option>
-            <option value="krosa">俱盧舍 (1/8 由旬 = 1.4km)</option>
-            <option value="dhanus">尋 / 弓 (4 肘 = 1.75m)</option>
-            <option value="hasta">肘 (24 指 = 43.75cm)</option>
-            <option value="anguli">指節 (7 麥 = 1.82cm)</option>
-          </select>
-        </div>
-        <div id="dist-result" class="converter-result">--</div>
 
         <div
-          class="converter-hint"
-          style="color: #bfa588; margin: 16px 0 6px 0"
+          id="converter-content"
+          style="
+            display: none;
+            margin-top: 14px;
+            border-top: 1px dashed #5c4033;
+            padding-top: 12px;
+          "
         >
-          【時間度量衡換算】：
+          <div class="converter-hint" style="color: #bfa588; margin-bottom: 6px">
+            【空間度量衡換算】：
+          </div>
+          <div class="converter-row">
+            <input
+              type="number"
+              id="dist-input"
+              class="converter-input"
+              value="1"
+              min="0.001"
+              step="any"
+            />
+            <select id="dist-unit" class="converter-select">
+              <option value="yojana">由旬 (俱舍大由旬 11.2km)</option>
+              <option value="krosa">俱盧舍 (1/8 由旬 = 1.4km)</option>
+              <option value="dhanus">尋 / 弓 (4 肘 = 1.75m)</option>
+              <option value="hasta">肘 (24 指 = 43.75cm)</option>
+              <option value="anguli">指節 (7 麥 = 1.82cm)</option>
+            </select>
+          </div>
+          <div id="dist-result" class="converter-result">--</div>
+
+          <div
+            class="converter-hint"
+            style="color: #bfa588; margin: 16px 0 6px 0"
+          >
+            【時間度量衡換算】：
+          </div>
+          <div class="converter-row">
+            <input
+              type="number"
+              id="time-input"
+              class="converter-input"
+              value="1"
+              min="0.001"
+              step="any"
+            />
+            <select id="time-unit" class="converter-select">
+              <option value="mahakalpa">大劫 (80 中劫 = 13.44億年)</option>
+              <option value="antarakalpa">
+                中劫 / 小劫 (一增一減 = 1680萬年)
+              </option>
+              <option value="heavenYear">
+                欲界天年 (以忉利天100人間年為一日)
+              </option>
+              <option value="muhurta">牟呼栗多 (30 臘縛 = 48分鐘)</option>
+              <option value="lava">臘縛 (60 怛剎那 = 1.6秒)</option>
+              <option value="tatksana">怛剎那 (120 剎那 = 0.0267秒)</option>
+              <option value="ksana">剎那 (一念 65 剎那 = 0.0133秒)</option>
+            </select>
+          </div>
+          <div id="time-result" class="converter-result">--</div>
         </div>
-        <div class="converter-row">
-          <input
-            type="number"
-            id="time-input"
-            class="converter-input"
-            value="1"
-            min="0.001"
-            step="any"
-          />
-          <select id="time-unit" class="converter-select">
-            <option value="mahakalpa">大劫 (80 中劫 = 13.44億年)</option>
-            <option value="antarakalpa">
-              中劫 / 小劫 (一增一減 = 1680萬年)
-            </option>
-            <option value="heavenYear">
-              欲界天年 (以忉利天100人間年為一日)
-            </option>
-            <option value="muhurta">牟呼栗多 (30 臘縛 = 48分鐘)</option>
-            <option value="lava">臘縛 (60 怛剎那 = 1.6秒)</option>
-            <option value="tatksana">怛剎那 (120 剎那 = 0.0267秒)</option>
-            <option value="ksana">剎那 (一念 65 剎那 = 0.0133秒)</option>
-          </select>
+      </div>
+
+      <!-- 說明欄末尾正下方關閉按鈕（獨立於轉換器外框之外） -->
+      <div style="display: flex; justify-content: center; margin-top: 30px; margin-bottom: 15px;">
+        <div
+          id="close-panel-bottom"
+          style="
+            cursor: pointer;
+            font-size: 22px;
+            color: #aaa;
+            border: 1px solid #5c4033;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(35, 25, 20, 0.6);
+            transition: all 0.2s ease;
+            user-select: none;
+          "
+          onmouseover="this.style.color='#ffffff'; this.style.borderColor='#f1c40f'; this.style.background='#8b5a2b';"
+          onmouseout="this.style.color='#aaa'; this.style.borderColor='#5c4033'; this.style.background='rgba(35, 25, 20, 0.6)';"
+        >
+          ✕
         </div>
-        <div id="time-result" class="converter-result">--</div>
       </div>
     </div>
 
@@ -3514,7 +3574,9 @@
         const metaBox = document.getElementById("panel-meta-box");
         const videoBox = document.getElementById("continent-video-box");
         const videoPlayer = document.getElementById("continent-video-player");
+        const unitBox = document.getElementById("unit-converter-box");
         if (metaBox) metaBox.style.display = "flex"; // 點選其他天界時恢復顯示屬性方塊
+        if (unitBox) unitBox.style.display = "block"; // 點選其他天界時恢復顯示轉換器
 
         // 若在手機模式，開啟詳細面板時自動收合左側目錄
         if (window.innerWidth <= 768) {
@@ -4264,11 +4326,13 @@
         const videoPlayer = document.getElementById("continent-video-player");
         const metaBox = document.getElementById("panel-meta-box");
 
+        const unitBox = document.getElementById("unit-converter-box");
         if (tabContainer) tabContainer.style.display = "none";
         if (diagramBox) diagramBox.style.display = "none";
         if (videoBox) videoBox.style.display = "none";
         if (videoPlayer) videoPlayer.pause();
         if (metaBox) metaBox.style.display = "none"; // Q&A 模式下隱藏屬性方塊
+        if (unitBox) unitBox.style.display = "none"; // Q&A 模式下隱藏度量衡轉換器
 
         currentActiveNodeId = "qa-section";
         titleEl.textContent = "佛教徒常見 Q&A";
@@ -4423,10 +4487,17 @@
         updatePanelFontSizes();
       }
 
-      document.getElementById("close-panel").addEventListener("click", () => {
-        panel.classList.remove("active");
-        currentActiveNodeId = null;
-        setVignetteFocus(false);
+      // 支援頂部與底部兩個「✕」關閉按鈕
+      ["close-panel", "close-panel-bottom"].forEach((id) => {
+        const btn = document.getElementById(id);
+        if (btn) {
+          btn.addEventListener("click", () => {
+            panel.classList.remove("active");
+            currentActiveNodeId = null;
+            setVignetteFocus(false);
+            stopPanelVideo();
+          });
+        }
       });
 
       // 側邊欄內部雙指手勢：精準縮放字級（降低門檻至 12px，雙指觸控時阻斷外層畫布縮放）
@@ -4496,6 +4567,14 @@
             startTranslateX + (endTranslateX - startTranslateX) * ease;
           translateY =
             startTranslateY + (endTranslateY - startTranslateY) * ease;
+
+          if (scale >= 0.05) {
+            const minY = -2600;
+            const maxY = 11800;
+            const maxTranslateY = window.innerHeight * 0.7 - minY * scale;
+            const minTranslateY = window.innerHeight * 0.3 - maxY * scale;
+            translateY = Math.max(minTranslateY, Math.min(maxTranslateY, translateY));
+          }
 
           updateTransform();
 
@@ -4577,6 +4656,17 @@
 
       function updateTransform() {
         requestAnimationFrame(() => {
+          // 在非大千世界模式下，鎖定上下邊界（頂部出三界之上、底部地獄道之下）
+          if (scale >= 0.05) {
+            const minY = -2600; // 最上限：出三界 (Y: -2200) 之上
+            const maxY = 11800; // 最下限：地獄道 (Y: 11450) 之下
+
+            const maxTranslateY = window.innerHeight * 0.7 - minY * scale;
+            const minTranslateY = window.innerHeight * 0.3 - maxY * scale;
+
+            translateY = Math.max(minTranslateY, Math.min(maxTranslateY, translateY));
+          }
+
           canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
           updateNavHighlight();
 
@@ -4856,6 +4946,20 @@
 
       calculateDistance();
       calculateTime();
+
+      // 《俱舍論》度量衡轉換器展開/收合切換函式
+      function toggleUnitConverter() {
+        const content = document.getElementById("converter-content");
+        const arrow = document.getElementById("converter-arrow");
+        if (!content) return;
+        if (content.style.display === "none" || content.style.display === "") {
+          content.style.display = "block";
+          if (arrow) arrow.style.transform = "rotate(180deg)";
+        } else {
+          content.style.display = "none";
+          if (arrow) arrow.style.transform = "rotate(0deg)";
+        }
+      }
     </script>
   </body>
 </html>
