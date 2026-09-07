@@ -213,6 +213,11 @@
       <h1>六度認知全棧架構 · 系統修復模型</h1>
       <p>自底向上的六大出廠缺陷修復方案</p>
     </div>
+    <a href="https://youtu.be/DKenb3kehXY?si=ccjmPrF0KQmCS8z9" target="_blank" rel="noopener noreferrer" title="觀看 YouTube 影片" style="display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 10px; background: #1e293b; border: 1px solid #334155; color: #ff0033; text-decoration: none; transition: all 0.2s ease;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+      </svg>
+    </a>
   </header>
 
   <div class="main-layout">
@@ -333,6 +338,43 @@
 
     let currentIndex = 0; // default L6
 
+    // Web Audio API 深沉科技感低頻嘟嘟聲
+    let audioCtx = null;
+    function playTechBeep() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      const now = audioCtx.currentTime;
+
+      function triggerBeep(startTime, startFreq, endFreq) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(startFreq, startTime);
+        osc.frequency.exponentialRampToValueAtTime(endFreq, startTime + 0.06);
+
+        gain.gain.setValueAtTime(0.0001, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.18, startTime + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.06);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start(startTime);
+        osc.stop(startTime + 0.06);
+      }
+
+      // 第一聲沉穩低頻 "嘟" (140Hz -> 110Hz)
+      triggerBeep(now, 140, 110);
+      // 第二聲稍高的科技感回應 "嘟" (180Hz -> 145Hz，間隔 0.075 秒)
+      triggerBeep(now + 0.075, 180, 145);
+    }
+
     const stackContainer = document.getElementById('stack-container');
 
     // Build 2D Block Cards
@@ -346,7 +388,12 @@
         </div>
         <div class="layer-sub">${item.sub}</div>
       `;
-      card.onmouseenter = () => selectLayer(index);
+      card.onmouseenter = () => {
+        if (currentIndex !== index) {
+          playTechBeep();
+        }
+        selectLayer(index);
+      };
       stackContainer.appendChild(card);
     });
 
