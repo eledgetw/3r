@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>六度波羅蜜 × 神經科學認知架構 2D</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    body {
+      background-color: #080b12;
+      color: #f1f5f9;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Top Bar */
+    header {
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #0f172a;
+      border-bottom: 2px solid #1e293b;
+    }
+    .header-title h1 {
+      font-size: 1.6rem;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      color: #ffffff;
+    }
+    .header-title p {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+    .key-tip {
+      font-size: 0.85rem;
+      background: #1e293b;
+      padding: 6px 14px;
+      border-radius: 8px;
+      color: #38bdf8;
+      font-weight: 600;
+      border: 1px solid #334155;
+    }
+
+    /* Main Container */
+    .main-layout {
+      flex: 1;
+      display: flex;
+      gap: 24px;
+      padding: 24px 32px;
+      height: calc(100vh - 78px);
+    }
+
+    /* Left Stack: 2D Block Layers */
+    .stack-container {
+      flex: 1.1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      height: 100%;
+      justify-content: space-between;
+    }
+
+    .layer-card {
+      flex: 1;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      border: 2px solid transparent;
+      user-select: none;
+    }
+
+    .layer-card .layer-giant-title {
+      font-size: 2.1rem;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      color: #ffffff;
+      text-shadow: 0 3px 12px rgba(0,0,0,0.6);
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+    }
+    .layer-card .layer-badge {
+      font-size: 1.3rem;
+      font-weight: 900;
+      opacity: 0.9;
+    }
+    .layer-card .layer-sub {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.85);
+      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+
+    /* Bold Themes per layer */
+    .theme-l6 { background: linear-gradient(90deg, #9333ea 0%, #c084fc 100%); }
+    .theme-l5 { background: linear-gradient(90deg, #4f46e5 0%, #818cf8 100%); }
+    .theme-l4 { background: linear-gradient(90deg, #dc2626 0%, #f87171 100%); }
+    .theme-l3 { background: linear-gradient(90deg, #d97706 0%, #fbbf24 100%); }
+    .theme-l2 { background: linear-gradient(90deg, #059669 0%, #34d399 100%); }
+    .theme-l1 { background: linear-gradient(90deg, #0284c7 0%, #38bdf8 100%); }
+
+    /* Dimmed & Active state */
+    .layer-card.dimmed {
+      opacity: 0.35;
+      filter: saturate(0.6) brightness(0.7);
+      transform: scale(0.985);
+    }
+    .layer-card.active {
+      opacity: 1;
+      filter: saturate(1.2) brightness(1.15);
+      transform: scale(1.02);
+      border-color: #ffffff;
+      box-shadow: 0 0 28px rgba(255, 255, 255, 0.4), 0 10px 20px rgba(0,0,0,0.5);
+      z-index: 5;
+    }
+    .layer-card.active::before {
+      content: "▶";
+      position: absolute;
+      left: 10px;
+      font-size: 1.1rem;
+      color: #ffffff;
+    }
+
+    /* Right Detail Panel */
+    .detail-panel {
+      flex: 1.4;
+      background: #0f172a;
+      border-radius: 16px;
+      border: 2px solid #1e293b;
+      padding: 28px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+      overflow-y: auto;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #1e293b;
+      padding-bottom: 16px;
+    }
+    .panel-main-title {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .panel-tag {
+      font-size: 0.95rem;
+      font-weight: 800;
+      padding: 6px 14px;
+      border-radius: 8px;
+      background: #1e293b;
+    }
+
+    .detail-block {
+      background: #131d33;
+      border-radius: 12px;
+      padding: 16px 20px;
+      border-left: 6px solid #3b82f6;
+    }
+    .detail-block-title {
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .detail-block-desc {
+      font-size: 1.05rem;
+      line-height: 1.6;
+      color: #cbd5e1;
+    }
+
+    .block-neuro { border-left-color: #38bdf8; }
+    .block-neuro .detail-block-title { color: #38bdf8; }
+    .block-flaw { border-left-color: #fb923c; }
+    .block-flaw .detail-block-title { color: #fb923c; }
+    .block-bug { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.08); }
+    .block-bug .detail-block-title { color: #f87171; }
+    .block-bug .detail-block-desc { color: #fca5a5; font-weight: 600; }
+    .block-data { border-left-color: #a855f7; }
+    .block-data .detail-block-title { color: #c084fc; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-title">
+      <h1>六度認知全棧架構 · 系統修復模型</h1>
+      <p>自底向上的六大出廠缺陷修復方案</p>
+    </div>
+  </header>
+
+  <div class="main-layout">
+    <!-- Left 2D Blocks (From L6 to L1) -->
+    <div class="stack-container" id="stack-container"></div>
+
+    <!-- Right Detailed Panel -->
+    <div class="detail-panel" id="detail-panel">
+      <div class="panel-header">
+        <div class="panel-main-title" id="p-title">L6 般若</div>
+        <div class="panel-tag" id="p-tag">TOP LAYER</div>
+      </div>
+
+      <div class="detail-block block-neuro">
+        <div class="detail-block-title">✦ 核心修復機制 & 腦區迴路</div>
+        <div class="detail-block-desc" id="p-mech">-</div>
+      </div>
+
+      <div class="detail-block block-data">
+        <div class="detail-block-title">✦ 神經科學實證與實驗依據</div>
+        <div class="detail-block-desc" id="p-data">-</div>
+      </div>
+
+      <div class="detail-block block-flaw">
+        <div class="detail-block-title">✦ 人類大腦出廠缺陷 (Cognitive Bottleneck)</div>
+        <div class="detail-block-desc" id="p-flaw">-</div>
+      </div>
+
+      <div class="detail-block block-bug">
+        <div class="detail-block-title">✦ 無般若時的異化模式 (System Bug)</div>
+        <div class="detail-block-desc" id="p-bug">-</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Data list from Top (L6) to Bottom (L1)
+    const layers = [
+      {
+        id: "l6",
+        level: "L6",
+        title: "L6 般若",
+        name: "般若 (Prajñā)",
+        sub: "元認知監控 · 全局校準器",
+        theme: "theme-l6",
+        color: "#c084fc",
+        mech: "元認知（去中心化），跳脫思維流將念頭視為事件而非真實自我。調用前額葉最高階監控功能。",
+        data: "依賴前額葉最高階功能對自身認知過程進行實時監控；演化最晚成熟、最脆弱，疲勞或醉酒時最先喪失。",
+        flaw: "身處思維流中將自身念頭誤認為「客觀事實」與「自我本體」，徹底缺乏宏觀抽離的監控視角。",
+        bug: "【無】般若是所有維度的靈魂與解毒劑，確保前五度不淪為自我執著的新牢籠。"
+      },
+      {
+        id: "l5",
+        level: "L5",
+        title: "L5 禪定",
+        name: "禪定 (Dhyāna)",
+        sub: "抑制預設網絡 · 關閉自我敘事",
+        theme: "theme-l5",
+        color: "#818cf8",
+        mech: "關閉大腦預設模式網絡 (DMN) 的自我敘事機器，調降發呆反芻轉速。",
+        data: "2004年 Davidson 等發現資深修行者冥想時 Gamma 腦波 (25-42Hz) 增幅達對照組 30 倍；2011年耶魯 Brewer 團隊證實 mPFC 與 PCC 顯著抑制。",
+        flaw: "DMN 在大腦閒置時永不停歇地編造後悔與焦慮故事，預設轉速過高（如風扇常態 5000 轉）。",
+        bug: "異化為逃避現實的精神鴉片（沉溺於內在美妙定境，抗拒現實生活與人際互動）。"
+      },
+      {
+        id: "l4",
+        level: "L4",
+        title: "L4 精進",
+        name: "精進 (Vīrya)",
+        sub: "過程動機 · 啟動內在心流",
+        theme: "theme-l4",
+        color: "#f87171",
+        mech: "切換多巴胺驅動模式：由「結果預期驅動（外在動機）」轉為「探索過程驅動（內在動機）」。",
+        data: "2017年《人類神經科學前沿》綜述證實多巴胺系統為內在動機關鍵底物；心流狀態下目標清晰但不執著於結果回報。",
+        flaw: "將目標當作 KPI 追逐，過程痛苦，一旦結果延遲或不如預期即陷入耗竭與內耗。",
+        bug: "異化為對修行的執著與焦慮（「我怎麼還沒開悟？是不是我不夠努力？」）。"
+      },
+      {
+        id: "l3",
+        level: "L3",
+        title: "L3 忍辱",
+        name: "忍辱 (Kṣānti)",
+        sub: "認知重評 · 毫秒級情緒調節",
+        theme: "theme-l3",
+        color: "#fbbf24",
+        mech: "毫秒級認知重評，由前額葉自上而下強力抑制杏仁核與腦島的戰或逃反應。",
+        data: "2014年《大腦皮層》薈萃分析證實 dlPFC、vlPFC、dmPFC 協同抑制杏仁核；2023年經顱磁刺激 (TMS) 提供因果證據。",
+        flaw: "情緒刺激在毫秒級啟動杏仁核劫持，一般人需花費 30 分鐘以上才能平復冷靜。",
+        bug: "異化為內傷積怨的強行壓抑（表面隱忍不發，內在情緒毒素持續蓄積等待爆炸）。"
+      },
+      {
+        id: "l2",
+        level: "L2",
+        title: "L2 持戒",
+        name: "持戒 (Śīla)",
+        sub: "執行意圖 · 釋放前額葉負載",
+        theme: "theme-l2",
+        color: "#34d399",
+        mech: "設定明確行為邊界（If-Then 執行意圖），將實時決策轉為自動化神經迴路，消除決策疲勞。",
+        data: "Gollwitzer 團隊元分析 (94項研究, 8000+ 被試) 顯示執行意圖效應量達 0.65，顯著降低前額葉即時計算負荷。",
+        flaw: "前額葉宛如肌肉極易決策疲勞，頻繁抵抗誘惑將導致意志力崩潰與衝動失控。",
+        bug: "異化為傲慢與道德優越感（「我持戒比你們嚴謹，你們皆是犯戒凡夫」）。"
+      },
+      {
+        id: "l1",
+        level: "L1",
+        title: "L1 佈施",
+        name: "佈施 (Dāna)",
+        sub: "鬆解佔有 · 激活用體化學獎賞",
+        theme: "theme-l1",
+        color: "#38bdf8",
+        mech: "鬆解最粗重的「我的」佔有迴路，激活群體社會聯結與腹側紋狀體獎賞機制。",
+        data: "2007年 Paul Zak 團隊實驗證實給予行為促使大腦釋放催產素、多巴胺與血清素，降低杏仁核威脅反應並增強共情。",
+        flaw: "演化本能將「佔有」視為生存獎賞、將「失去」視為威脅懲罰，鎖死於利己模式。",
+        bug: "異化為計算功德的利益交易（「我捐了這麼多錢，神明與宇宙必須給我對等福報」）。"
+      }
+    ];
+
+    let currentIndex = 0; // default L6
+
+    const stackContainer = document.getElementById('stack-container');
+
+    // Build 2D Block Cards
+    layers.forEach((item, index) => {
+      const card = document.createElement('div');
+      card.className = `layer-card ${item.theme} ${index === currentIndex ? 'active' : 'dimmed'}`;
+      card.innerHTML = `
+        <div class="layer-giant-title">
+          <span class="layer-badge">${item.level}</span>
+          <span>${item.title.split(' ')[1]}</span>
+        </div>
+        <div class="layer-sub">${item.sub}</div>
+      `;
+      card.onmouseenter = () => selectLayer(index);
+      stackContainer.appendChild(card);
+    });
+
+    function updateDetails(data) {
+      document.getElementById('p-title').innerText = data.title;
+      document.getElementById('p-title').style.color = data.color;
+      document.getElementById('p-tag').innerText = `${data.level} PARAMITA`;
+      document.getElementById('p-tag').style.color = data.color;
+      
+      document.getElementById('p-mech').innerText = data.mech;
+      document.getElementById('p-data').innerText = data.data;
+      document.getElementById('p-flaw').innerText = data.flaw;
+      document.getElementById('p-bug').innerText = data.bug;
+    }
+
+    function selectLayer(index) {
+      if (index < 0) index = 0;
+      if (index >= layers.length) index = layers.length - 1;
+      currentIndex = index;
+
+      const cards = document.querySelectorAll('.layer-card');
+      cards.forEach((c, idx) => {
+        if (idx === currentIndex) {
+          c.classList.remove('dimmed');
+          c.classList.add('active');
+        } else {
+          c.classList.remove('active');
+          c.classList.add('dimmed');
+        }
+      });
+
+      updateDetails(layers[currentIndex]);
+    }
+
+    // Keyboard navigation (Up / Down)
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        selectLayer(currentIndex - 1);
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        selectLayer(currentIndex + 1);
+      }
+    });
+
+    // Initialize display
+    selectLayer(0);
+  </script>
+</body>
+</html>
